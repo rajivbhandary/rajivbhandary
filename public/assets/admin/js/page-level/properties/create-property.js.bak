@@ -1,0 +1,207 @@
+// console.log("here");
+
+$(function(){
+    $('#property-type').on('change', function(){
+        var type = $( "#property-type option:selected" ).val();
+        if(type == 'residential'){
+            $('.property-residential').css('display', 'block');
+            $('.property-commercial').css('display', 'none');
+        }else if(type == 'commercial'){
+            $('.property-commercial').css('display', 'block');
+            $('.property-residential').css('display', 'none');
+        }
+    });
+
+    $('#property-status').on('change', function(){
+        var type = $( "#property-status option:selected" ).val();
+        if(type == 'rent'){
+            $('.property-rent').css('display', 'block');
+        }else if(type == 'sell'){
+            $('.property-rent').css('display', 'none');
+        }
+    });
+
+    /*
+            JQuery Validations
+     */
+
+    $(".create-property").validate({
+        'rules': {
+            'property-status': {
+                required: true,
+                minlength: 2,
+                maxlength: 255,
+            },
+            'property-type': {
+                required: true,
+                minlength: 2,
+                maxlength: 255,
+            },
+            'name': {
+                required: true,
+                minlength: 2,
+            },
+            'phone': {
+                required: true,
+            },
+            'email': {
+                required: true,
+            },
+            'location-realtor-name': {
+                required: true,
+                minlength: 2,
+            },
+            'location-house-number': {
+                required: true,
+            },
+            'location-building-name': {
+                required: true,
+            },
+            'location-street': {
+                required: true,
+                minlength: 2,
+            },
+            'location-landmark': {
+                required: true,
+            },
+            'location-locality': {
+                required: true,
+            },
+            'location-town': {
+                required: true,
+                minlength: 2,
+            },
+            'location-city': {
+                required: true,
+            },
+            'location-pincode': {
+                required: true,
+            },
+            'location-state': {
+                required: true,
+                minlength: 2,
+            },
+            'location-country': {
+                required: true,
+            },
+            'location-latitude': {
+                required: true,
+            },
+            'location-longitude': {
+                required: true,
+                minlength: 2,
+            },
+            'property-bedrooms': {
+                required: true,
+            },
+            'property-bathrooms': {
+                required: true,
+            },
+            'property-separate-toilets': {
+                required: true,
+                minlength: 2,
+            },
+            'property-total-floors': {
+                required: true,
+            },
+            'property-floor-number': {
+                required: true,
+            },
+			'property-seats': {
+                required: true,
+                minlength: 2,
+            },
+            'property-cabin': {
+                required: true,
+            },
+            'property-meeting-room': {
+                required: true,
+            },
+			'property-reception-area': {
+                required: true,
+                minlength: 2,
+            },
+            'property-pantry': {
+                required: true,
+            },
+            'roperty-staircase': {
+                required: true,
+            },
+			'property-lift': {
+                required: true,
+                minlength: 2,
+            },
+            'property-furnished-status': {
+                required: true,
+            },
+            'other-rooms[]': {
+                required: true,
+            },
+			'property-covered-parking': {
+                required: true,
+                minlength: 2,
+            },
+            'property-open-parking': {
+                required: true,
+            },
+            'property-facing-direction': {
+                required: true,
+            },
+			'property-age-property': {
+                required: true,
+                minlength: 2,
+            },
+            'property-description': {
+                required: true,
+            },
+            'property-carpet-area': {
+                required: true,
+            },
+			'property-built-up-area': {
+                required: true,
+                minlength: 2,
+            },
+            'property-super-built-up-area': {
+                required: true,
+            },
+            'property-rera-numbe': {
+                required: true,
+            },
+			'property-availability-status': {
+                required: true,
+                minlength: 2,
+            },
+            'property-price': {
+                required: true,
+            },
+            'property-negotiable': {
+                required: true,
+            },
+			'property-security-deposit-amount': {
+                required: true,
+                minlength: 2,
+            },
+            'property-amount': {
+                required: true,
+            },
+            'email': {
+                required: true,
+            },
+			'name': {
+                required: true,
+                minlength: 2,
+            },
+            'phone': {
+                required: true,
+            },
+            'email': {
+                required: true,
+            },
+        },
+        submitHandler: function (form) {
+            // do other things for a valid form
+            form.submit();
+        }
+    });
+    
+});

@@ -1,0 +1,16 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class PropertySuitableBusiness extends Model
+{
+    use SoftDeletes;
+    protected $fillable = [
+        'name',
+        'property_id',
+        'additional_info'
+    ];
+}
