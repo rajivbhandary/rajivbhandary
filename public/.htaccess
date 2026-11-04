@@ -19,3 +19,25 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Compress text responses (HTML, CSS, JS, JSON, SVG, fonts).
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml
+    AddOutputFilterByType DEFLATE application/javascript text/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml font/ttf application/vnd.ms-fontobject
+</IfModule>
+
+# Let browsers cache static files. CSS/JS links carry a ?v= version, so
+# change it when the file changes.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
+    ExpiresByType text/javascript "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+</IfModule>

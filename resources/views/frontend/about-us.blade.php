@@ -17,7 +17,7 @@
                     <span class="pp-eyebrow">Our story</span>
                     <h2 class="pp-section__title">Local knowledge, from the building up</h2>
                     <p class="mt-4">Perks Properties was established in 1999 with a background in facility management. Looking after buildings taught us what makes a property a good buy or a good tenancy, and that experience still shapes how we advise clients today.</p>
-                    <p>We help people buy, sell, rent and invest in every kind of property, residential or commercial, resale or new projects. Our network across Mumbai and Thane means we often hear about the right opportunity before it reaches the portals.</p>
+                    <p>We help people buy, sell, rent and invest in every kind of property, residential or commercial, resale or new projects. Our network across Mumbai and Thane helps us find the right opportunity for each client.</p>
                     <p class="mb-0">You can meet us at our offices in Colaba and Thane, or start with a call.</p>
                 </div>
                 <div class="col-lg-5 mt-6 mt-lg-0">
@@ -38,7 +38,7 @@
                     <p class="text-muted mb-0">Managing Director</p>
                 </div>
                 <div class="pp-office text-center">
-                    <img src="{{ asset('assets/frontend/img/about-us/director.jpg') }}" alt="Akash Bhandary" class="rounded-circle mb-3" width="112" height="112" style="object-fit:cover" loading="lazy">
+                    <img src="{{ asset('assets/frontend/img/about-us/director-336.jpg') }}" alt="Akash Bhandary" class="rounded-circle mb-3" width="112" height="112" style="object-fit:cover" loading="lazy">
                     <h3>Akash Bhandary</h3>
                     <p class="text-muted mb-0">Director</p>
                 </div>

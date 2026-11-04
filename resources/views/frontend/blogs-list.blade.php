@@ -37,6 +37,7 @@
             </form>
 
             @if ($blog_count)
+                <h2 class="sr-only">Articles</h2>
                 <div class="pp-cols-3">
                     @foreach ($blogs as $blog)
                         @include('frontend.layouts.shared._blog-card', ['blog' => $blog])

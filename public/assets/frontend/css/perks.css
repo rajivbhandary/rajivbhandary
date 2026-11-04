@@ -401,3 +401,13 @@ img { max-width: 100%; height: auto; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- Accessibility fixes over theme defaults -------------------------- */
+/* Theme grey (#ABABAB) is below 4.5:1 contrast on white. */
+.text-muted { color: var(--pp-muted) !important; }
+.breadcrumb-item a, .breadcrumb-item + .breadcrumb-item::before { color: var(--pp-muted); }
+.breadcrumb-item.active { color: var(--pp-ink); }
+/* Links inside running text must not rely on colour alone. */
+main p a:not(.pp-btn), .pp-office a, .pp-prose a, .pp-form-note a, .pp-notice a, .pp-contact-list a, .pp-section__title a {
+    text-decoration: underline; text-underline-offset: 3px;
+}

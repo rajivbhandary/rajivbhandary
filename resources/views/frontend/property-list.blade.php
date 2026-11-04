@@ -63,6 +63,7 @@
                 </div>
             </div>
         @else
+            <h2 class="sr-only">Results</h2>
             <div class="pp-grid">
                 @foreach ($properties as $property)
                     @include('frontend.layouts.shared._property-card', ['property' => $property])
