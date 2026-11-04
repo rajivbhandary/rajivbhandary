@@ -652,8 +652,7 @@
                                                                 <option value="">Select</option>
                                                                 @foreach($yes_no_options as $yes_no_option)
                                                                     <option value="{{ $yes_no_option['id'] }}" 
-                                                                    {{ (old('property-reception-area', $property->getOffice()->reception_area + 1) 
-                                                                    && (($yes_no_option['id']-1) == ($property->getOffice()->reception_area))  ? 'selected' : ' ') }}>
+                                                                    {{ ((int) old('property-reception-area', $property->getOffice()->reception_area ? 1 : 2) === (int) $yes_no_option['id']) ? 'selected' : '' }}>
                                                                     {{ $yes_no_option['value'] }}</option>
                                                                 @endforeach
                                                                 {{ $property_type['value'] == $property->type  ? 'selected' : ' ' }}
@@ -669,8 +668,7 @@
                                                             <select id="property-pantry" name="property-pantry" class="form-control">
                                                                 <option value="">Select</option>
                                                                 @foreach($yes_no_options as $yes_no_option)
-                                                                    <option value="{{ $yes_no_option['id'] }}" {{ (old('property-pantry', ($property->getOffice()->pantry + 1)) 
-                                                                    && ($yes_no_option['id']-1 == $property->getOffice()->pantry)  ? 'selected' : ' ') }}>
+                                                                    <option value="{{ $yes_no_option['id'] }}" {{ ((int) old('property-pantry', $property->getOffice()->pantry ? 1 : 2) === (int) $yes_no_option['id']) ? 'selected' : '' }}>
                                                                     {{ $yes_no_option['value'] }}</option>
                                                                 @endforeach
                                                             </select>
@@ -685,8 +683,7 @@
                                                             <select id="property-staircase" name="property-staircase" class="form-control">
                                                                 <option value="">Select</option>
                                                                 @foreach($yes_no_options as $yes_no_option)
-                                                                    <option value="{{ $yes_no_option['id'] }}" {{ (old('property-staircase', ($property->getOffice()->staircase + 1)) 
-                                                                    && ($yes_no_option['id'] - 1 == $property->getOffice()->staircase)  ? 'selected' : ' ') }}>
+                                                                    <option value="{{ $yes_no_option['id'] }}" {{ ((int) old('property-staircase', $property->getOffice()->staircase ? 1 : 2) === (int) $yes_no_option['id']) ? 'selected' : '' }}>
                                                                     {{ $yes_no_option['value'] }}</option>
                                                                 @endforeach
                                                             </select>
@@ -702,8 +699,7 @@
                                                                 <option value="">Select</option>
                                                                 @foreach($yes_no_options as $yes_no_option)
                                                                     <option value="{{ $yes_no_option['id'] }}" 
-                                                                    {{ (old('property-lift', ($property->getOffice()->lift + 1)) 
-                                                                    && ($yes_no_option['id'] - 1 == $property->getOffice()->lift)  ? 'selected' : ' ') }}>
+                                                                    {{ ((int) old('property-lift', $property->getOffice()->lift ? 1 : 2) === (int) $yes_no_option['id']) ? 'selected' : '' }}>
                                                                     {{ $yes_no_option['value'] }}</option>
                                                                 @endforeach
                                                             </select>
@@ -718,8 +714,7 @@
                                                             <select id="property-furnished-status" name="property-furnished-status" class="form-control">
                                                                 <option value="">Select</option>
                                                                 @foreach($furnished_status as $option)
-                                                                    <option value="{{ $option['id'] }}" {{ (old('property-furnished-status', ($property->getResidential()->furnishing + 1)) 
-                                                                    && ($option['id'] - 1 == $property->getResidential()->furnishing)  ? 'selected' : ' ') }}>
+                                                                    <option value="{{ $option['id'] }}" {{ ((int) old('property-furnished-status', $property->getResidential()->furnishing ? 1 : 2) === (int) $option['id']) ? 'selected' : '' }}>
                                                                     {{ $option['value'] }}</option>
                                                                 @endforeach
                                                             </select>
@@ -734,8 +729,7 @@
                                                             <select id="property-others-furnished-status" name="property-others-furnished-status" class="form-control">
                                                                 <option value="">Select</option>
                                                                 @foreach($furnished_status as $option)
-                                                                    <option value="{{ $option['id'] }}" {{ (old('property-furnished-status', ($property->getOtherCommercials()->furnishing + 1)) 
-                                                                        && ($option['id'] - 1 == $property->getOtherCommercials()->furnishing)  ? 'selected' : ' ') }}>
+                                                                    <option value="{{ $option['id'] }}" {{ ((int) old('property-others-furnished-status', $property->getOtherCommercials()->furnishing ? 1 : 2) === (int) $option['id']) ? 'selected' : '' }}>
                                                                         {{ $option['value'] }}</option>
                                                                 @endforeach
                                                             </select>
@@ -1401,8 +1395,7 @@
                                                         <select id="property-negotiable" name="property-negotiable" class="form-control">
                                                             <option value="">Select</option>
                                                             @foreach($yes_no_options as $yes_no_option)
-                                                                <option value="{{ $yes_no_option['id'] }}" {{ (old('property-negotiable', ($property->negotiable + 1)) 
-                                                                        && ($yes_no_option['id'] - 1 == $property->negotiable)  ? 'selected' : ' ') }}>
+                                                                <option value="{{ $yes_no_option['id'] }}" {{ ((int) old('property-negotiable', $property->negotiable ? 1 : 2) === (int) $yes_no_option['id']) ? 'selected' : '' }}>
                                                                         {{ $yes_no_option['value'] }}</option>
                                                             @endforeach
                                                         </select>

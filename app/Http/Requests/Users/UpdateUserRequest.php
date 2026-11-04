@@ -27,7 +27,7 @@ class UpdateUserRequest extends FormRequest
             'name' => 'required|string|min:2|max:255',
             'email' => "required|string|email|max:255|unique:users,email,{$this->user->id}",
             'phone_number' => "required|unique:users,phone_number,{$this->user->id}",
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:1024',
+            'image' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'facebook_id' => 'max:255',
             'instagram_id' => 'max:255',
             'twitter_id' => 'max:255',

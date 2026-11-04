@@ -21,7 +21,9 @@ class Visit extends Model
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('created_at', 'like', "%{$searchValue}%")->orWhere('method', 'like', "%{$searchValue}%")->orWhere('url', 'like', "%{$searchValue}%")->orWhere('ip', 'like', "%{$searchValue}%")->orWhere('platform', 'like', "%{$searchValue}%")->orWhere('browser', 'like', "%{$searchValue}%")->orWhere('device', 'like', "%{$searchValue}%")->orWhere('languages', 'like', "%{$searchValue}%");
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('created_at', 'like', "%{$searchValue}%")->orWhere('method', 'like', "%{$searchValue}%")->orWhere('url', 'like', "%{$searchValue}%")->orWhere('ip', 'like', "%{$searchValue}%")->orWhere('platform', 'like', "%{$searchValue}%")->orWhere('browser', 'like', "%{$searchValue}%")->orWhere('device', 'like', "%{$searchValue}%")->orWhere('languages', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }

@@ -23,7 +23,7 @@ class FRESeeder extends Seeder
      */
     public function run()
     {
-        if(ENV('APP_ENV') == 'local')
+        if (app()->environment(['local', 'testing']))
         {
             $freLocality = ['V.P Road', 'L.B.S Marg', 'R.R.T Road', 'Bhakti Marg', 'M.G Road'];
             $freTown = ['Mulund', 'Thane', 'Bhandup', 'Nahur', 'Airoli'];

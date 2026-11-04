@@ -19,7 +19,7 @@ use App\PropertySurrounding;
 use App\RentDetail;
 use App\Residential;
 use App\Shop;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -57,9 +57,6 @@ class PropertiesController extends Controller
         $security_deposite_mode = [["id" => 1, "value" =>'Fixed'],["id" => 2, "value" =>'Variable']];
 
         $folder_name = Carbon::now()->timestamp;
-        if(!Storage::exists("properties-temp/" . $folder_name)){
-            Storage::makeDirectory("properties-temp/" . $folder_name);
-        }
         // dd($property_status, $property_types, $yes_no_options);
 
         $this->authorize('create', Property::class);
@@ -83,156 +80,38 @@ class PropertiesController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request);
-        // dd($this->validateBasicPropertyFields($request), $this->validateOwnerDetailsFields($request), $this->validateLocationFields($request), $this->validateRentFields($request), $this->validateCommonToAllFields($request), $this->validateResidentialFields($request), $this->validateSellFields($request), $this->validateOfficeFields($request), $this->validateShopfields($request), $this->validateOtherCommercialfields($request));
-    
-        //Custom Validation
-        if($this->validateBasicPropertyFields($request) && $this->validateOwnerDetailsFields($request) && $this->validateLocationFields($request) && $this->validateCommonToAllFields($request))
-        {  
-            if($request['property-type'] == 1 && $this->validateResidentialFields($request)){
-                //Residential
+        $this->authorize('create', Property::class);
 
-                if($request['property-status'] == 1 && $this->validateRentFields($request)){
-                    //Rent
+        $status = (int) $request['property-status'];
+        $type = (int) $request['property-type'];
+        $commercial = (int) $request['property-commercials'];
 
-                    $locationID = $this->createLocation($request);
-                    $rentID = $this->createRentDetails($request);
-                    $propertyID = $this->createProperty($request, $locationID, $rentID);
-                    $this->createResidential($request, $propertyID);
-                    $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-
-                    return 'success';
-
-                }else if($request['property-status'] == 2 && $this->validateSellFields($request)){
-                    //Sell
-
-                    $locationID = $this->createLocation($request);
-                    $propertyID = $this->createProperty($request, $locationID, null);
-                    $this->createResidential($request, $propertyID);
-                    $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                    return 'success';
-
-                }else{
-                    return 'failure';
-                }
-
-            }else if($request['property-type'] == 2){
-                //Commercial
-                // dd('here');
-            
-                if($request['property-commercials'] == 1 && $this->validateOfficeFields($request)){
-                    //Offices
-                    // dd('offices here');
-                    if($request['property-status'] == 1 && $this->validateRentFields($request)){
-                        //Rent
-                        // dd('offices rent here');
-    
-                        $locationID = $this->createLocation($request);
-                        $rentID = $this->createRentDetails($request);
-                        $propertyID = $this->createProperty($request, $locationID, $rentID);
-                        $this->createOffice($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else if($request['property-status'] == 2 && $this->validateSellFields($request)){
-                        //Sell
-                        // dd('offices sell here');
-    
-                        $locationID = $this->createLocation($request);
-                        $propertyID = $this->createProperty($request, $locationID, null);
-                        $this->createOffice($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-
-                }else if($request['property-commercials'] == 2 && $this->validateShopfields($request)){
-                    //Shops
-                    if($request['property-status'] == 1 && $this->validateRentFields($request)){
-                        //Rent
-    
-                        $locationID = $this->createLocation($request);
-                        $rentID = $this->createRentDetails($request);
-                        $propertyID = $this->createProperty($request, $locationID, $rentID);
-                        $this->createShop($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else if($request['property-status'] == 2 && $this->validateSellFields($request)){
-                        //Sell
-    
-                        $locationID = $this->createLocation($request);
-                        $propertyID = $this->createProperty($request, $locationID, null);
-                        $this->createShop($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-                }else if($request['property-commercials'] == 3){
-                    //Land
-                    // dd("land here");
-                    if($request['property-status'] == 1 && $this->validateRentFields($request)){
-                        //Rent
-    
-                        $locationID = $this->createLocation($request);
-                        $rentID = $this->createRentDetails($request);
-                        $propertyID = $this->createProperty($request, $locationID, $rentID);
-                        $this->createLand($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else if($request['property-status'] == 2 && $this->validateSellFields($request)){
-                        //Sell
-    
-                        $locationID = $this->createLocation($request);
-                        $propertyID = $this->createProperty($request, $locationID, null);
-                        $this->createLand($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-                }else if($request['property-commercials'] == 4 && $this->validateOtherCommercialfields($request)){
-                    //Other Commercials
-
-                    if($request['property-status'] == 1 && $this->validateRentFields($request)){
-                        //Rent
-    
-                        $locationID = $this->createLocation($request);
-                        $rentID = $this->createRentDetails($request);
-                        $propertyID = $this->createProperty($request, $locationID, $rentID);
-                        $this->createOtherCommercial($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else if($request['property-status'] == 2 && $this->validateSellFields($request)){
-                        //Sell
-    
-                        $locationID = $this->createLocation($request);
-                        $propertyID = $this->createProperty($request, $locationID, null);
-                        $this->createOtherCommercial($request, $propertyID);
-                        $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-
-                }else {
-                    return 'failure';
-                }
-            }else{
-                return 'failure';
-            } 
+        $validator = $this->propertyValidator($request, $this->propertyRules($status, $type, $commercial, false));
+        if ($validator->fails()) {
+            return $this->validationFailed($validator);
         }
-        else{
-            return 'failure';
-        }   
+
+        DB::transaction(function () use ($request, $status, $type, $commercial) {
+            $locationID = $this->createLocation($request);
+            $rentID = $status === 1 ? $this->createRentDetails($request) : null;
+            $propertyID = $this->createProperty($request, $locationID, $rentID);
+
+            if ($type === 1) {
+                $this->createResidential($request, $propertyID);
+            } elseif ($commercial === 1) {
+                $this->createOffice($request, $propertyID);
+            } elseif ($commercial === 2) {
+                $this->createShop($request, $propertyID);
+            } elseif ($commercial === 3) {
+                $this->createLand($request, $propertyID);
+            } else {
+                $this->createOtherCommercial($request, $propertyID);
+            }
+
+            $this->createAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $propertyID);
+        });
+
+        return 'success';
     }
 
     /**
@@ -266,9 +145,6 @@ class PropertiesController extends Controller
         $security_deposite_mode = [["id" => 1, "value" =>'Fixed'],["id" => 2, "value" =>'Variable']];
 
         $folder_name = Carbon::now()->timestamp;
-        if(!Storage::exists("properties-temp/" . $folder_name)){
-            Storage::makeDirectory("properties-temp/" . $folder_name);
-        }
         // dd(count($property->getAmenities()));
 
         $location = Location::findOrFail($property->location_id);
@@ -305,156 +181,87 @@ class PropertiesController extends Controller
      */
     public function update(Request $request, Property $property)
     {
-        // dd($request['surrounding_name']);
-        // dd($this->validateBasicPropertyFields($request), $this->validateOwnerDetailsFields($request), $this->validateLocationFields($request), $this->validateRentFields($request), $this->validateUpdateCommonToAllFields($request), $this->validateResidentialFields($request), $this->validateSellFields($request), $this->validateOfficeFields($request), $this->validateShopfields($request), $this->validateOtherCommercialfields($request));
-
         $this->authorize('update', $property);
-        
-        if($this->validateBasicPropertyFields($request) && $this->validateOwnerDetailsFields($request) && $this->validateLocationFields($request) && $this->validateUpdateCommonToAllFields($request))
-        {  
-            if($property->isResidential() && $this->validateResidentialFields($request)){
-                //Residential
 
-                if($property->isRent() && $this->validateRentFields($request)){
-                    //Rent
+        // Status, type and category are fixed once a listing exists.
+        $status = $property->isRent() ? 1 : 2;
+        $type = $property->isResidential() ? 1 : 2;
+        $commercial = $property->isOffice() ? 1 : ($property->isShop() ? 2 : ($property->isLand() ? 3 : 4));
 
-                    $locationID = $this->updateLocation($property, $request);
-                    $rentID = $this->updateRentDetails($property, $request);
-                    $propertyID = $this->updateProperty($property, $request, $locationID, $rentID);
-                    $this->updateResidential($request, $property);
-                    $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-
-                    return 'success';
-
-                }else if($property->sell() && $this->validateSellFields($request)){
-                    //Sell
-
-                    $locationID = $this->updateLocation($property, $request);
-                    $propertyID = $this->updateProperty($property, $request, $locationID, null);
-                    $this->updateResidential($request, $property);
-                    $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                    return 'success';
-
-                }else{
-                    return 'failure';
-                }
-
-            }else if($property->isCommercial() == 2){
-                //Commercial
-                // dd('here');
-            
-                if($property->isOffice() && $this->validateOfficeFields($request)){
-                    //Offices
-                    // dd('offices here');
-                    if($property->isRent() && $this->validateRentFields($request)){
-                        //Rent
-                        // dd('offices rent here');
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $rentID = $this->updateRentDetails($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, $rentID);
-                        $this->updateOffice($request, $property);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else if($property->isSell() && $this->validateSellFields($request)){
-                        //Sell
-                        // dd('offices sell here');
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, null);
-                        $this->updateOffice($request, $property);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-
-                }else if($property->isShop() && $this->validateShopfields($request)){
-                    //Shops
-                    if($property->isRent() && $this->validateRentFields($request)){
-                        //Rent
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $rentID = $this->updateRentDetails($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, $rentID);
-                        $this->updateShop($request, $property);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else if($property->isSell() && $this->validateSellFields($request)){
-                        //Sell
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, null);
-                        $this->updateShop($request, $property);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-
-                }else if($property->isLand()){
-                    //Land
-                    if($property->isRent() && $this->validateRentFields($request)){
-                        //Rent
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $rentID = $this->updateRentDetails($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, $rentID);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else if($property->isSell() && $this->validateSellFields($request)){
-                        //Sell
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, null);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-                }else if($property->isOtherCommercial() && $this->validateOtherCommercialfields($request)){
-                    //Other Commercials
-
-                    if($property->isRent() && $this->validateRentFields($request)){
-                        //Rent
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $rentID = $this->updateRentDetails($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, $rentID);
-                        $this->updateOtherCommercial($request, $property);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else if($property->isSell() && $this->validateSellFields($request)){
-                        //Sell
-    
-                        $locationID = $this->updateLocation($property, $request);
-                        $propertyID = $this->updateProperty($property, $request, $locationID, null);
-                        $this->updateOtherCommercial($request, $property);
-                        $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
-                        return 'success';
-    
-                    }else{
-                        return 'failure';
-                    }
-
-                }else {
-                    return 'failure';
-                }
-            }else{
-                return 'failure';
-            } 
+        $validator = $this->propertyValidator($request, $this->propertyRules($status, $type, $commercial, true));
+        if ($validator->fails()) {
+            return $this->validationFailed($validator);
         }
-        else{
-            return 'failure';
-        }  
 
+        DB::transaction(function () use ($request, $property, $status, $type, $commercial) {
+            $locationID = $this->updateLocation($property, $request);
+            $rentID = $status === 1 ? $this->updateRentDetails($property, $request) : null;
+            $this->updateProperty($property, $request, $locationID, $rentID);
+
+            if ($type === 1) {
+                $this->updateResidential($request, $property);
+            } elseif ($commercial === 1) {
+                $this->updateOffice($request, $property);
+            } elseif ($commercial === 2) {
+                $this->updateShop($request, $property);
+            } elseif ($commercial === 4) {
+                $this->updateOtherCommercial($request, $property);
+            }
+
+            $this->updateAmenityFacilitySurroundingSafetyEquipmentSpecialRoom($request, $property);
+        });
+
+        return 'success';
+    }
+
+    /**
+     * Every rule that applies to this kind of listing, checked in one go so
+     * the admin sees all problems at once.
+     */
+    private function propertyRules($status, $type, $commercial, $isUpdate)
+    {
+        $rules = array_merge(
+            $this->rulesBasicPropertyFields(),
+            $this->rulesOwnerDetailsFields(),
+            $this->rulesLocationFields(),
+            $isUpdate ? $this->rulesUpdateCommonToAllFields() : $this->rulesCommonToAllFields()
+        );
+
+        if ($type === 1) {
+            $rules = array_merge($rules, $this->rulesResidentialFields());
+        } elseif ($type === 2) {
+            $rules['property-commercials'] = $isUpdate ? 'nullable' : ['required', Rule::in(['1', '2', '3', '4'])];
+            if ($commercial === 1) {
+                $rules = array_merge($rules, $this->rulesOfficeFields());
+            } elseif ($commercial === 2) {
+                $rules = array_merge($rules, $this->rulesShopfields());
+            } elseif ($commercial === 4) {
+                $rules = array_merge($rules, $this->rulesOtherCommercialfields());
+            }
+        }
+
+        return array_merge($rules, $status === 1 ? $this->rulesRentFields() : $this->rulesSellFields());
+    }
+
+    private function propertyValidator(Request $request, array $rules)
+    {
+        $names = ['name' => 'owner name', 'phone' => 'owner phone', 'email' => 'owner email', 'image' => 'feature image'];
+        foreach (array_keys($rules) as $field) {
+            if (!isset($names[$field])) {
+                $names[$field] = str_replace(['-', '_'], ' ', preg_replace('/^(property|location)-(others-)?/', '', $field));
+            }
+        }
+
+        return Validator::make($request->all(), $rules, [], $names);
+    }
+
+    private function validationFailed($validator)
+    {
+        return response()->json([
+            'status' => 'failure',
+            'message' => 'Please correct the highlighted details.',
+            'errors' => $validator->errors(),
+        ], 422);
     }
 
     /**
@@ -493,7 +300,8 @@ class PropertiesController extends Controller
     }
 
     public function trashed(){
-        $trashed = Property::onlyTrashed()->paginate(1);
+        $this->authorize('viewAny', Property::class);
+        $trashed = Property::onlyTrashed()->paginate(20);
         return view('admin.properties.trashed', compact([
             'trashed',
         ]));
@@ -508,27 +316,26 @@ class PropertiesController extends Controller
     }
 
     /****************************************** CUSTOM VALIDATIONS *****************************************/
-    private function validateBasicPropertyFields($request){
-        $validator = Validator::make($request->all(), [
-            'property-status' => Rule::in(['1', '2']),
-            'property-type' => Rule::in(['1', '2'])
-        ]);
-
-        return (!$validator->fails());
+    private function rulesBasicPropertyFields()
+    {
+        return [
+            'property-status' => ['required', Rule::in(['1', '2'])],
+            'property-type' => ['required', Rule::in(['1', '2'])],
+        ];
     }
 
-    private function validateOwnerDetailsFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesOwnerDetailsFields()
+    {
+        return [
             'name' => 'required|min:2|max:255',
             'phone' => 'required|min:10|max:10',
             'email' => 'required|email'
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateLocationFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesLocationFields()
+    {
+        return [
             'location-realtor-name' => 'max:255|nullable',
             'location-building-name' => 'required|min:2|max:255',
             'location-street' => 'required|min:2|max:255',
@@ -541,48 +348,44 @@ class PropertiesController extends Controller
             'location-country' => 'required|min:2|max:255',
             'location-latitude' => 'required',
             'location-longitude' => 'required',
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateRentFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesRentFields()
+    {
+        return [
             'property-security-deposit-mode' => [
                 'required',
                 Rule::in(['1', '2'])],
             'property-amount' => 'required',
             'property-duration-of-agreement' => 'required',
             'property-months-of-notice' => 'required',
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateSellFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesSellFields()
+    {
+        return [
             'property-price' => 'required',
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateResidentialFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesResidentialFields()
+    {
+        return [
             'location-house-number' => 'required|min:2|max:255',
             'property-separate-toilets' => 'numeric|nullable',
             'property-bedrooms' => 'required',
-            'property-furnished-status' => 'required', Rule::in(['1', '2']),
+            'property-furnished-status' => ['required', Rule::in(['1', '2'])],
             'property-covered-parking' => 'required',
             'property-open-parking' => 'required',
             'property-facing-direction' => 'required|min:2|max:255',
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateOfficeFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesOfficeFields()
+    {
+        return [
             'property-office-number' => 'required|min:2|max:255',
             'property-seats' => 'required',
             'property-cabin' => 'required',
@@ -603,61 +406,32 @@ class PropertiesController extends Controller
                 'required',
                 Rule::in(['1', '2'])
             ],
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateShopfields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesShopfields()
+    {
+        return [
             'property-shop-number' => 'required|min:2|max:255',
             'property-facade-width' => 'required',
             'property-facade-height' => 'required',
             'suitable_business' => 'required'
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateOtherCommercialfields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesOtherCommercialfields()
+    {
+        return [
             'property-others-office-number' => 'required|min:2|max:255',
-            'property-others-furnished-status' => 'required', Rule::in(['1', '2']),
+            'property-others-furnished-status' => ['required', Rule::in(['1', '2'])],
             'property-others-covered-parking' => 'required',
             'property-others-open-parking' => 'required',
-        ]);
-
-        return (!$validator->fails());
+        ];
     }
 
-    private function validateCommonToAllFields($request){
-        $validator = Validator::make($request->all(), [
-            'property-bathrooms' => 'nullable',
-            'property-total-floors' => 'nullable',
-            'property-floor-number' => 'nullable',
-            'property-age-property' => 'required',
-            'property-description' => 'required|min:2',
-            'property-carpet-area' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg',
-            'property-availability-status' => [
-                'required',
-                Rule::in(['1', '2'])
-            ],
-            'property-negotiable' => [
-                'required',
-                Rule::in(['1', '2'])
-            ],
-            'seo_description' => 'max:255|nullable',
-            'seo_keywords' => 'max:2000|nullable',
-            'seo_og_title' => 'max:255|nullable',
-            'seo_og_description' => 'max:255|nullable',
-        ]);
-
-        return (!$validator->fails());
-    }
-
-    private function validateUpdateCommonToAllFields($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesCommonToAllFields()
+    {
+        return [
             'property-detailed-type' => 'required|min:2|max:255',
             'property-bathrooms' => 'nullable',
             'property-total-floors' => 'nullable',
@@ -665,7 +439,7 @@ class PropertiesController extends Controller
             'property-age-property' => 'required',
             'property-description' => 'required|min:2',
             'property-carpet-area' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|nullable',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
             'property-availability-status' => [
                 'required',
                 Rule::in(['1', '2'])
@@ -674,13 +448,37 @@ class PropertiesController extends Controller
                 'required',
                 Rule::in(['1', '2'])
             ],
-            'seo_description' => 'max:255|nullable',
-            'seo_keywords' => 'max:2000|nullable',
-            'seo_og_title' => 'max:255|nullable',
-            'seo_og_description' => 'max:255|nullable',
-        ]);
+            'seo-description' => 'max:255|nullable',
+            'seo-keywords' => 'max:2000|nullable',
+            'seo-og-title' => 'max:255|nullable',
+            'seo-og-description' => 'max:255|nullable',
+        ];
+    }
 
-        return (!$validator->fails());
+    private function rulesUpdateCommonToAllFields()
+    {
+        return [
+            'property-detailed-type' => 'required|min:2|max:255',
+            'property-bathrooms' => 'nullable',
+            'property-total-floors' => 'nullable',
+            'property-floor-number' => 'nullable',
+            'property-age-property' => 'required',
+            'property-description' => 'required|min:2',
+            'property-carpet-area' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'property-availability-status' => [
+                'required',
+                Rule::in(['1', '2'])
+            ],
+            'property-negotiable' => [
+                'required',
+                Rule::in(['1', '2'])
+            ],
+            'seo-description' => 'max:255|nullable',
+            'seo-keywords' => 'max:2000|nullable',
+            'seo-og-title' => 'max:255|nullable',
+            'seo-og-description' => 'max:255|nullable',
+        ];
     }
 
     /**************************************** CREATE TABLES ****************************************/
@@ -744,10 +542,10 @@ class PropertiesController extends Controller
             'owner_phone_number' => $request['phone'],
             'owner_email' => $request['email'],
             'slug' => Str::slug(lcfirst($request['property-type'] == 1 ? 'Residential' : 'Commercial')." ".$location->id." ".$request['property-carpet-area']." ".$location->city." ".$location->pincode." ".$location->state),
-            'seo_description' => $request['seo-description'] ?? null,
-            'seo_keywords' => $request['seo-keywords'] ?? null,
-            'seo_og_title' => $request['seo-og-title'] ?? null,
-            'seo_og_description' => $request['seo-og-description'] ?? null,
+            'seo-description' => $request['seo-description'] ?? null,
+            'seo-keywords' => $request['seo-keywords'] ?? null,
+            'seo-og-title' => $request['seo-og-title'] ?? null,
+            'seo-og-description' => $request['seo-og-description'] ?? null,
         ]);
 
         $property->manageImages($request);
@@ -928,10 +726,10 @@ class PropertiesController extends Controller
             'owner_phone_number' => $request['phone'],
             'owner_email' => $request['email'],
             'slug' => Str::slug(lcfirst($request['property-type'] == 1 ? 'Residential' : 'Commercial')." ".$location->id." ".$request['property-carpet-area']." ".$location->city." ".$location->pincode." ".$location->state),
-            'seo_description' => $request['seo-description'] ?? null,
-            'seo_keywords' => $request['seo-keywords'] ?? null,
-            'seo_og_title' => $request['seo-og-title'] ?? null,
-            'seo_og_description' => $request['seo-og-description'] ?? null,
+            'seo-description' => $request['seo-description'] ?? null,
+            'seo-keywords' => $request['seo-keywords'] ?? null,
+            'seo-og-title' => $request['seo-og-title'] ?? null,
+            'seo-og-description' => $request['seo-og-description'] ?? null,
         ]);
 
         $property->manageImages($request);

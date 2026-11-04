@@ -27,7 +27,7 @@ class UpdateBlogRequest extends FormRequest
             'title' => "required|min:2|max:255|unique:blogs,title,{$this->blog->id}",
             'excerpt' => 'required|min:2|max:255',
             'body' => 'required|min:2',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:1024',
+            'image' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'tag_id.*' => 'exists:tags,id',
             'published' => 'after_or_equal:today',
             'seo_description' => 'max:255',

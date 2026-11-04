@@ -105,7 +105,9 @@ class User extends Authenticatable
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('name', 'like', "%{$searchValue}%")->orWhere('email', 'like', "%{$searchValue}%")->orWhere('phone_number', 'like', "%{$searchValue}%")->orWhere('role', 'like', "%{$searchValue}%");
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('name', 'like', "%{$searchValue}%")->orWhere('email', 'like', "%{$searchValue}%")->orWhere('phone_number', 'like', "%{$searchValue}%")->orWhere('role', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }
@@ -129,6 +131,8 @@ class User extends Authenticatable
 
     public function scopeAdmins($query)
     {
-        return $query->where('role', 'like', "admin")->orWhere('role', 'like', "super-admin");
+        return $query->where(function ($q) {
+            $q->where('role', 'like', "admin")->orWhere('role', 'like', "super-admin");
+        });
     }
 }

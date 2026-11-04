@@ -35,7 +35,7 @@ class CreateUserRequest extends FormRequest
             'behance_id' => 'max:255',
             'youtube_id' => 'max:255',
             'password' => 'required|string|min:8|confirmed',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:1024',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
         ];
     }
 }

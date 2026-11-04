@@ -11,7 +11,7 @@ class TestimonialSeeder extends Seeder
      */
     public function run()
     {
-        if(ENV('APP_ENV') == 'local')
+        if (app()->environment(['local', 'testing']))
         {
             \App\Testimonial::create([
                 'name' => 'Karuna Kukreja',

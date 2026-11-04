@@ -51,27 +51,30 @@ class FREController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($this->validateFRE($request), $this->validateDeveloper($request), $this->validateLocation($request));
         $this->authorize('create', FRE::class);
 
-        if($this->validateFRE($request) && $this->validateDeveloper($request) && $this->validateLocation($request)){
-            // dd($image);
-            // dd("here");
+        $validator = Validator::make($request->all(), array_merge($this->rulesFRE(), $this->rulesDeveloper(), $this->rulesLocation()));
+        if ($validator->fails()) {
+            return $this->validationFailed($validator);
+        }
+
+        DB::transaction(function () use ($request) {
             $locationID = $this->createLocation($request);
-            // dd("here");
             $developerID = $this->createDeveloper($request);
-            // dd("here");
             $freID = $this->createFRE($request, $locationID, $developerID);
-            // dd("here");
             $this->createAmenitySurroundingOverviewKeypoint($request, $freID);
-            // dd("here");
+        });
 
-            // $this->insertUploadedFREImage($request['folder_name'], $freID);
+        return 'success';
+    }
 
-            return 'success';
-       }else{
-           return 'failure';
-       }
+    private function validationFailed($validator)
+    {
+        return response()->json([
+            'status' => 'failure',
+            'message' => 'Please correct the highlighted details.',
+            'errors' => $validator->errors(),
+        ], 422);
     }
 
     /**
@@ -108,20 +111,21 @@ class FREController extends Controller
      */
     public function update(Request $request, FRE $fre)
     {
-        // dd($this->validateUpdateFRE($request), $this->validateDeveloper($request), $this->validateLocation($request));
         $this->authorize('update', $fre);
-        if($this->validateUpdateFRE($request) && $this->validateDeveloper($request) && $this->validateLocation($request)){
-            // dd("here");
+
+        $validator = Validator::make($request->all(), array_merge($this->rulesUpdateFRE(), $this->rulesDeveloper(), $this->rulesLocation()));
+        if ($validator->fails()) {
+            return $this->validationFailed($validator);
+        }
+
+        DB::transaction(function () use ($request, $fre) {
             $locationID = $this->updateLocation($fre->location_id, $request);
             $developerID = $this->updateDeveloper($fre->developer_id, $request);
             $freID = $this->updateFRE($fre, $request, $locationID, $developerID);
             $this->updateAmenitySurroundingOverviewKeypoint($request, $freID);
-            // dd("here 2");
-            return 'success';
-        }else{
-            return 'failure';
-        }
-        
+        });
+
+        return 'success';
     }
 
     /**
@@ -294,8 +298,9 @@ class FREController extends Controller
 
     }
 
-    private function validateFRE($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesFRE()
+    {
+        return [
             'title' => 'required|min:2|max:255',
             'overview' => 'required|min:2',
             'commercial_space' => 'required|max:255',
@@ -315,25 +320,21 @@ class FREController extends Controller
             'carpet_area' => 'required|numeric',
             'property_type' => 'max:255',
             'tenant_overview' => 'required|min:10|max:2000',
-            'fre_feature_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
-            'founded' => "max:". date('Y') . "|nullable",
+            'founded' => 'nullable|integer|max:' . date('Y'),
             'industry' => 'max:255|nullable',
             'market_cap' => 'max:255|nullable',
             'employees' => 'numeric|nullable',
-            'tenant_overview' => 'required',
             'seo_description' => 'max:255',
             'seo_keywords' => 'max:2000',
             'seo_og_title' => 'max:255',
             'seo_og_description' => 'max:255',
-        ]);
-
-        // dd($validator->errors());
-
-        return (!$validator->fails());
+            'fre_feature_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ];
     }
 
-    private function validateUpdateFRE($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesUpdateFRE()
+    {
+        return [
             'title' => 'required|min:2|max:255',
             'overview' => 'required|min:2',
             'commercial_space' => 'required|max:255',
@@ -353,38 +354,30 @@ class FREController extends Controller
             'carpet_area' => 'required|numeric',
             'property_type' => 'max:255',
             'tenant_overview' => 'required|min:10|max:2000',
-            'fre_feature_image' => 'image|mimes:jpeg,png,jpg,gif,svg|nullable',
-            'founded' => "max:". date('Y') . "|nullable",
+            'founded' => 'nullable|integer|max:' . date('Y'),
             'industry' => 'max:255|nullable',
             'market_cap' => 'max:255|nullable',
             'employees' => 'numeric|nullable',
-            'tenant_overview' => 'required',
             'seo_description' => 'max:255',
             'seo_keywords' => 'max:2000',
             'seo_og_title' => 'max:255',
             'seo_og_description' => 'max:255',
-        ]);
-
-        // dd($validator->errors());
-
-        return (!$validator->fails());
-
+            'fre_feature_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ];
     }
 
-    private function validateDeveloper($request){
-
-        $validator = Validator::make($request->all(), [
+    private function rulesDeveloper()
+    {
+        return [
             'developer_name' => 'required',
             'developer_rera_number' => 'max:12',
             'developer_overview' => 'required|min:10|max:255',
-        ]);
-
-        return (!$validator->fails());
-        
+        ];
     }
 
-    private function validateLocation($request){
-        $validator = Validator::make($request->all(), [
+    private function rulesLocation()
+    {
+        return [
             'location_building_name' => 'required|min:2|max:255',
             'location_street' => 'required|min:2|max:255',
             'location_locality' => 'required|min:2|max:255',
@@ -396,10 +389,7 @@ class FREController extends Controller
             'location_country' => 'required',
             'location_latitude' => 'required',
             'location_longitude' => 'required',
-        ]);
-
-        // dd($validator->errors());
-        return (!$validator->fails());
+        ];
     }
 
     private function deleteImages(FRE $fre){

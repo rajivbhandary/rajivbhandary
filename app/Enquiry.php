@@ -108,7 +108,8 @@ class Enquiry extends Model
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('enquiries.name', 'like', "%{$searchValue}%")
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('enquiries.name', 'like', "%{$searchValue}%")
                 ->orWhere('email', 'like', "%{$searchValue}%")
                 ->orWhere('phone_number', 'like', "%{$searchValue}%")
                 ->orWhere('model', 'like', "%{$searchValue}%")
@@ -131,6 +132,7 @@ class Enquiry extends Model
                 ->orWhere('fre_locations.state', 'like', "%{$searchValue}%")
                 ->orWhere('fre_locations.country', 'like', "%{$searchValue}%")
                 ->orWhere('message', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }

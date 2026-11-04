@@ -27,7 +27,7 @@ class UpdateTestimonialRequest extends FormRequest
             'name' => 'required|min:2|max:255',
             'city' => 'required|min:2|max:255',
             'testimonial' => 'required|min:2',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:1024',
+            'image' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ];
     }
 }

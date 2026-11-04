@@ -443,6 +443,10 @@ var KTWizard2 = function () {
 
                     // See: http://malsup.com/jquery/form/#ajaxSubmit
                     formEl.ajaxSubmit({
+                        error: function(xhr) {
+                            KTApp.unprogress(btn);
+                            showSaveErrors(xhr);
+                        },
                         success: function(data) {
                             KTApp.unprogress(btn);
                             //KTApp.unblock(formEl);
@@ -456,15 +460,8 @@ var KTWizard2 = function () {
                                 }).then(function(result) {
                                     window.location.href = window.origin + '/control-panel/properties';
                                 });
-                            }else if(data == 'failure'){
-                                swal.fire({
-                                    "title": "",
-                                    "text": "There was some error. Please try again!",
-                                    "type": "error",
-                                    "confirmButtonClass": "btn btn-secondary"
-                                }).then(function(result) {
-                                    window.location.href = window.origin + '/control-panel/properties';
-                                });
+                            }else{
+                                showSaveErrors(null);
                             }
                         }
                     });
@@ -775,3 +772,23 @@ jQuery(document).ready(function() {
         }
     }
 });
+
+/**
+ * Keep the admin on the form and list what needs fixing.
+ */
+function showSaveErrors(xhr) {
+    var list = $('<ul class="text-left mb-0"></ul>');
+    if (xhr && xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+        $.each(xhr.responseJSON.errors, function (field, messages) {
+            list.append($('<li></li>').text(messages[0]));
+        });
+    } else {
+        list.append($('<li></li>').text('The listing could not be saved. Please try again; your details are still on the form.'));
+    }
+    swal.fire({
+        title: 'Please check these details',
+        html: list.prop('outerHTML'),
+        type: 'error',
+        confirmButtonClass: 'btn btn-secondary'
+    });
+}

@@ -91,9 +91,11 @@ class Testimonial extends Model
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('name', 'like', "%{$searchValue}%")
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('name', 'like', "%{$searchValue}%")
                 ->orWhere('city', 'like', "%{$searchValue}%")
                 ->orWhere('testimonial', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }

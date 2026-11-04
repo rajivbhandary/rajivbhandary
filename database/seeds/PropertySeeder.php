@@ -19,7 +19,7 @@ class PropertySeeder extends Seeder
      */
     public function run()
     {
-        if(ENV('APP_ENV') == 'local')
+        if (app()->environment(['local', 'testing']))
         {
             DB::statement('INSERT INTO `locations` (`id`, `realtor`, `building_name`, `street`, `landmark`, `locality`, `town`, `city`, `pincode`, `state`, `country`, `latitude`, `longitude`, `created_at`, `updated_at`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [6, 'Rajesh Developers', 'Mulund Mamta', 'L.B.S Marg', 'Santoshi Mata Mandir', 'Near Govardhan Nagar', 'Mulund', 'Mumbai', '400080', 'Maharashtra', 'India', '19.183749', '72.948013', date('Y-m-d H:i:s'), date('Y-m-d H:i:s')]);
             DB::statement('INSERT INTO `locations` (`id`, `realtor`, `building_name`, `street`, `landmark`, `locality`, `town`, `city`, `pincode`, `state`, `country`, `latitude`, `longitude`, `created_at`, `updated_at`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [7, 'Rajesh Developers', 'Dolphine', 'VP Road', NULL, 'Near Kalidas Hall', 'Mulund', 'Mumbai', '400080', 'Maharashtra', 'India', '19.183881', '72.949132', date('Y-m-d H:i:s'), date('Y-m-d H:i:s')]);

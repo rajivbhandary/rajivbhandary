@@ -184,10 +184,12 @@ class Blog extends Model
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('title', 'like', "%{$searchValue}%")
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('title', 'like', "%{$searchValue}%")
                 ->orWhere('author.name', 'like', "%{$searchValue}%")
                 ->orWhere('tags.name', 'like', "%{$searchValue}%")
                 ->orWhere('approved.name', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }

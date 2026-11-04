@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        if(ENV('APP_ENV') == 'local')
+        if (app()->environment(['local', 'testing']))
         {
             \App\User::create([
                 'name' => 'Demo Super Admin',

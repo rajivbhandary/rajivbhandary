@@ -11,7 +11,7 @@ class TagSeeder extends Seeder
      */
     public function run()
     {
-        if(ENV('APP_ENV') == 'local')
+        if (app()->environment(['local', 'testing']))
         {
             \App\Tag::create(['name' => 'customer experience']);
             \App\Tag::create(['name' => 'laravel']);

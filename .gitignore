@@ -12,3 +12,15 @@ npm-debug.log
 yarn-error.log
 /.idea
 *.stackdump
+
+# Files uploaded through the control panel live on the server, not in git.
+/storage/app/public/blogs/
+/storage/app/public/blog-detail-images/
+/storage/app/public/fres/
+/storage/app/public/fres-feature-image/
+/storage/app/public/properties/
+/storage/app/public/properties-feature-image/
+/storage/app/public/testimonials/
+/storage/app/public/testimonial-detail-images/
+/storage/app/public/users/
+/storage/framework/laravel-excel/

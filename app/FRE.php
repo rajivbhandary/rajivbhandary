@@ -56,7 +56,8 @@ class FRE extends Model
     }
 
     public function developer() {
-        return $this->hasOne(Developer::class, 'id');
+        // fre.developer_id -> developers.id (was matching on the FRE's own id).
+        return $this->belongsTo(Developer::class, 'developer_id');
     }
 
     public function image(){
@@ -215,7 +216,8 @@ class FRE extends Model
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('title', 'like', "%{$searchValue}%")
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('title', 'like', "%{$searchValue}%")
                 ->orWhere('fre_locations.building_name', 'like', "%{$searchValue}%")
                 ->orWhere('fre_locations.street', 'like', "%{$searchValue}%")
                 ->orWhere('fre_locations.landmark', 'like', "%{$searchValue}%")
@@ -228,6 +230,7 @@ class FRE extends Model
                 ->orWhere('total_price', 'like', "%{$searchValue}%")
                 ->orWhere('fre_developer.name', 'like', "%{$searchValue}%")
                 ->orWhere('possesion_date', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }

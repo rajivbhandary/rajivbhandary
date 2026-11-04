@@ -12,7 +12,7 @@ class EnquirySeeder extends Seeder
      */
     public function run()
     {
-        if(ENV('APP_ENV') == 'local')
+        if (app()->environment(['local', 'testing']))
         {
             $id = [1, 2, 3, 4, 5];
             $modelArray = ['App\FRE', 'App\Property', null];
