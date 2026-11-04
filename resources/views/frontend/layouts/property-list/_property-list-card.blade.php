@@ -24,8 +24,8 @@
                   </div>
                   <div class="mt-auto d-flex hover-image">
                      <ul class="list-inline mb-0 d-flex align-items-end mr-auto">
-                        <li class="list-inline-item mr-2" data-toggle="tooltip" title="9 Images">
-                           <a href="{{ route('frontend.single-property', $property->slug) }}" class="text-white hover-primary"> <i class="fa fa-image"></i><span class="pl-1">{{ count($property->getAllUploadedPropertyImageNames($property->id)) }}</span> </a>
+                        <li class="list-inline-item mr-2" data-toggle="tooltip" title="{{ $property->photo_count }} photos">
+                           <a href="{{ route('frontend.single-property', $property->slug) }}" class="text-white hover-primary"> <i class="fa fa-image"></i><span class="pl-1">{{ $property->photo_count }}</span> </a>
                         </li>
                      </ul>
                   </div>
@@ -47,7 +47,7 @@
                   </div>
                </div>
                <p class="mb-2 font-weight-500 text-gray-light">{{ $property->getLocationDetails()->town . ', ' .$property->getLocationDetails()->city }}</p>
-               <p class="mb-6 mxw-571 ml-0 text-justify">{{ Str::limit($property->description, 250, '...') }}</p>
+               <p class="mb-6 mxw-571 ml-0 text-justify">{{ Str::limit(\App\Support\Html::text($property->description), 250, '...') }}</p>
                <div class="d-lg-flex justify-content-lg-between">
                   <ul class="list-inline d-flex mb-0 flex-wrap">
                   

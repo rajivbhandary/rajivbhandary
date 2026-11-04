@@ -115,19 +115,12 @@ class Property extends Model
     //     return $allImageNames;
     // }
 
-    public function getAllUploadedPropertyImagePath(){
-        $imagesInFolder = File::files("storage/properties");
-        return $imagesInFolder;
-    }
-
-    public function getAllUploadedPropertyImageNames(){
-        $imagesInFolder = File::files("storage/properties");
-        $allImageNames = array();
-        foreach($imagesInFolder as $path) {
-            $image = pathinfo($path);
-            $allImageNames[] = $image["basename"];
-        }
-        return $allImageNames;
+    /**
+     * Number of gallery photos for this listing.
+     */
+    public function getPhotoCountAttribute()
+    {
+        return $this->relationLoaded('image') ? $this->image->count() : $this->image()->count();
     }
 
     public function getUploadedImages(){

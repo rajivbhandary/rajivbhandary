@@ -55,11 +55,5 @@
 @endsection
 
 @section('page-level-scripts')
-    <script type="text/javascript"
-            src="https://maps.google.com/maps/api/js?key=AIzaSyBtef1bQ120B4xrdo9Tli83GW6ro4TecVI&sensor=false"></script>
 
-    <script>
-        initMapCoordinates("{{$property->location->latitude}}", "{{$property->location->longitude}}");
-        initMarker("{{ $property->isResidential() ? 'home-icon.png' : ($property->isOffice() ? 'office-icon.png' : ($property->isShop() ? 'shop-icon.png' : ($property->isLand() ? 'land-icon.png' : ($property->isOtherCommercial() ? 'others-icon.png' : '')))) }}");
-    </script>
 @endsection

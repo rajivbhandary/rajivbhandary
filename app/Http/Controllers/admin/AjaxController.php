@@ -17,61 +17,53 @@ use Illuminate\Http\Request;
 
 class AjaxController extends Controller
 {
+    /** Tables an author may load; everything else is admin-only. */
+    private const AUTHOR_PAGES = ['manage_blogs', 'manage_trashed_blogs'];
+
     public function getData(Request $request)
     {
-        if($request->has('search')){
-            $search_parameter = $request->get('search')['value'];
+        $user = $request->user();
+        $page = $request->get('page');
+        if (!($user->isAdmin() || $user->isSuperAdmin()) && !in_array($page, self::AUTHOR_PAGES, true)) {
+            abort(403);
+        }
+
+        $search_parameter = null;
+        $order_by = null;
+        $start = (int) $request->get('start', 0);
+        $length = (int) $request->get('length', 10);
+        $draw = (int) $request->get('draw', 1);
+        if ($request->has('search')) {
+            $search_parameter = $request->input('search.value');
             $order_by = $request->get('order');
-            $start = $request->get('start');
-            $length = $request->get('length');
-            $draw = $request->get('draw');
         }
-        if ($request->has('page')) {
-            if ($request->get('page') == 'manage_blogs') {
-                return $this->getBlogs($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_blogs') {
-                return $this->getTrashedBlogs($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_users') {
-                return $this->getUsers($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_users') {
-                return $this->getTrashedUsers($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_visits') {
-                return $this->getVisits($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_visits') {
-                return $this->getTrashedVisits($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_pages') {
-                return $this->getPages($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_tags') {
-                return $this->getTags($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_tags') {
-                return $this->getTrashedTags($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_streams') {
-                return $this->getStreams($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_streams') {
-                return $this->getTrashedStreams($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_enquiries') {
-                return $this->getEnquiries($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_enquiries') {
-                return $this->getTrashedEnquiries($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_testimonials') {
-                return $this->getTestimonials($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_addresses') {
-                return $this->getAddresses($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_addresses') {
-                return $this->getTrashedAddresses($draw, $search_parameter, $order_by, $start, $length);
-            } elseif($request->get('page') == 'manage_properties') {
-                return $this->getProperties($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_properties') {
-                return $this->getTrashedProperties($draw, $search_parameter, $order_by, $start, $length);
-            } elseif($request->get('page') == 'manage_fre') {
-                return $this->getFRE($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_trashed_fre') {
-                return $this->getTrashedFRE($draw, $search_parameter, $order_by, $start, $length);
-            } elseif ($request->get('page') == 'manage_dashboard') {
-                $type = $request->get('type');
-                return $this->getDashboard($type);
-            } 
+        $tables = [
+            'manage_blogs' => 'getBlogs',
+            'manage_trashed_blogs' => 'getTrashedBlogs',
+            'manage_users' => 'getUsers',
+            'manage_trashed_users' => 'getTrashedUsers',
+            'manage_visits' => 'getVisits',
+            'manage_trashed_visits' => 'getTrashedVisits',
+            'manage_pages' => 'getPages',
+            'manage_tags' => 'getTags',
+            'manage_trashed_tags' => 'getTrashedTags',
+            'manage_enquiries' => 'getEnquiries',
+            'manage_trashed_enquiries' => 'getTrashedEnquiries',
+            'manage_testimonials' => 'getTestimonials',
+            'manage_properties' => 'getProperties',
+            'manage_trashed_properties' => 'getTrashedProperties',
+            'manage_fre' => 'getFRE',
+            'manage_trashed_fre' => 'getTrashedFRE',
+        ];
+
+        if ($page === 'manage_dashboard') {
+            return $this->getDashboard($request->get('type'));
         }
+        if (!isset($tables[$page])) {
+            abort(404);
+        }
+
+        return $this->{$tables[$page]}($draw, $search_parameter, $order_by, $start, $length);
     }
 
     /*
@@ -126,10 +118,10 @@ class AjaxController extends Controller
                 <<<IMAGE
     <img src="storage/{$filteredData[$i]->image}" class="rounded-circle" alt="User Image" width="100px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->name;
-            $subarray[] = $filteredData[$i]->email;
-            $subarray[] = $filteredData[$i]->phone_number;
-            $subarray[] = $filteredData[$i]->role;
+            $subarray[] = e((string) ($filteredData[$i]->name));
+            $subarray[] = e((string) ($filteredData[$i]->email));
+            $subarray[] = e((string) ($filteredData[$i]->phone_number));
+            $subarray[] = e((string) ($filteredData[$i]->role));
             $subarray[] = $this->getUserActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -142,7 +134,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedUsers($draw, $searchParameter, $orderBy, $start, $length)
@@ -158,10 +150,10 @@ IMAGE;
                 <<<IMAGE
     <img src="storage/{$filteredData[$i]->image}" class="rounded-circle" alt="User Image" width="100px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->name;
-            $subarray[] = $filteredData[$i]->email;
-            $subarray[] = $filteredData[$i]->phone_number;
-            $subarray[] = $filteredData[$i]->role;
+            $subarray[] = e((string) ($filteredData[$i]->name));
+            $subarray[] = e((string) ($filteredData[$i]->email));
+            $subarray[] = e((string) ($filteredData[$i]->phone_number));
+            $subarray[] = e((string) ($filteredData[$i]->role));
             $subarray[] = $this->getTrashedUserActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -174,7 +166,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getUserActionButtons($user)
@@ -230,7 +222,7 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->name;
+            $subarray[] = e((string) ($filteredData[$i]->name));
             $subarray[] = $this->getTagActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -242,7 +234,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedTags($draw, $searchParameter, $orderBy, $start, $length)
@@ -254,7 +246,7 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->name;
+            $subarray[] = e((string) ($filteredData[$i]->name));
             $subarray[] = $this->getTrashedTagActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -266,7 +258,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
      /*
@@ -339,12 +331,12 @@ IMAGE;
             $subarray[] = <<<IMAGE
 <img src="storage/{$filteredData[$i]->image}" class="" alt="Blog Image" width="150px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->title;
-            $subarray[] = $filteredData[$i]->user_name;
-            $subarray[] = $filteredData[$i]->published_at ? $filteredData[$i]->published_date : 'Pending';
-            $subarray[] = $filteredData[$i]->tag_names;
-            $subarray[] = $filteredData[$i]->approved_by_name ? $filteredData[$i]->approved_by_name : 'Pending';
-            $subarray[] = $filteredData[$i]->approved_at ? $filteredData[$i]->approved_date : 'Pending';
+            $subarray[] = e((string) ($filteredData[$i]->title));
+            $subarray[] = e((string) ($filteredData[$i]->user_name));
+            $subarray[] = e((string) ($filteredData[$i]->published_at ? $filteredData[$i]->published_date : 'Pending'));
+            $subarray[] = e((string) ($filteredData[$i]->tag_names));
+            $subarray[] = e((string) ($filteredData[$i]->approved_by_name ? $filteredData[$i]->approved_by_name : 'Pending'));
+            $subarray[] = e((string) ($filteredData[$i]->approved_at ? $filteredData[$i]->approved_date : 'Pending'));
             $subarray[] = $this->getBlogActionButtons($filteredData[$i]);
             $subarray[] = <<<PREVIEW
 <div class="d-flex align-items-center justify-content-center">
@@ -362,7 +354,7 @@ PREVIEW;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedBlogs($draw, $searchParameter, $orderBy, $start, $length)
@@ -381,12 +373,12 @@ PREVIEW;
             $subarray[] = <<<IMAGE
 <img src="storage/{$filteredData[$i]->image}" class="" alt="Blog Image" width="150px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->title;
-            $subarray[] = $filteredData[$i]->user_name;
-            $subarray[] = $filteredData[$i]->published_at ? $filteredData[$i]->published_date : 'Pending';
-            $subarray[] = $filteredData[$i]->tag_names;
-            $subarray[] = $filteredData[$i]->approved_by_name ? $filteredData[$i]->approved_by_name : 'Pending';
-            $subarray[] = $filteredData[$i]->approved_at ? $filteredData[$i]->approved_date : 'Pending';
+            $subarray[] = e((string) ($filteredData[$i]->title));
+            $subarray[] = e((string) ($filteredData[$i]->user_name));
+            $subarray[] = e((string) ($filteredData[$i]->published_at ? $filteredData[$i]->published_date : 'Pending'));
+            $subarray[] = e((string) ($filteredData[$i]->tag_names));
+            $subarray[] = e((string) ($filteredData[$i]->approved_by_name ? $filteredData[$i]->approved_by_name : 'Pending'));
+            $subarray[] = e((string) ($filteredData[$i]->approved_at ? $filteredData[$i]->approved_date : 'Pending'));
             $subarray[] = $this->getTrashedBlogActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -398,7 +390,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     /*
@@ -463,11 +455,11 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->route_url;
-            $subarray[] = $filteredData[$i]->seo_description;
-            $subarray[] = $filteredData[$i]->seo_keywords;
-            $subarray[] = $filteredData[$i]->seo_og_title;
-            $subarray[] = $filteredData[$i]->seo_og_description;
+            $subarray[] = e((string) ($filteredData[$i]->route_url));
+            $subarray[] = e((string) ($filteredData[$i]->seo_description));
+            $subarray[] = e((string) ($filteredData[$i]->seo_keywords));
+            $subarray[] = e((string) ($filteredData[$i]->seo_og_title));
+            $subarray[] = e((string) ($filteredData[$i]->seo_og_description));
             $subarray[] = $this->getPageActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -480,7 +472,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getVisits($draw, $searchParameter, $orderBy, $start, $length)
@@ -492,14 +484,14 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->created_at;
-            $subarray[] = $filteredData[$i]->method;
-            $subarray[] = $filteredData[$i]->url;
-            $subarray[] = $filteredData[$i]->ip;
-            $subarray[] = $filteredData[$i]->platform;
-            $subarray[] = $filteredData[$i]->browser;
-            $subarray[] = $filteredData[$i]->device;
-            $subarray[] = $filteredData[$i]->languages;
+            $subarray[] = e((string) ($filteredData[$i]->created_at));
+            $subarray[] = e((string) ($filteredData[$i]->method));
+            $subarray[] = e((string) ($filteredData[$i]->url));
+            $subarray[] = e((string) ($filteredData[$i]->ip));
+            $subarray[] = e((string) ($filteredData[$i]->platform));
+            $subarray[] = e((string) ($filteredData[$i]->browser));
+            $subarray[] = e((string) ($filteredData[$i]->device));
+            $subarray[] = e((string) ($filteredData[$i]->languages));
             $subarray[] = $this->getGeneralActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -512,7 +504,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedVisits($draw, $searchParameter, $orderBy, $start, $length)
@@ -524,14 +516,14 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->created_at;
-            $subarray[] = $filteredData[$i]->method;
-            $subarray[] = $filteredData[$i]->url;
-            $subarray[] = $filteredData[$i]->ip;
-            $subarray[] = $filteredData[$i]->platform;
-            $subarray[] = $filteredData[$i]->browser;
-            $subarray[] = $filteredData[$i]->device;
-            $subarray[] = $filteredData[$i]->languages;
+            $subarray[] = e((string) ($filteredData[$i]->created_at));
+            $subarray[] = e((string) ($filteredData[$i]->method));
+            $subarray[] = e((string) ($filteredData[$i]->url));
+            $subarray[] = e((string) ($filteredData[$i]->ip));
+            $subarray[] = e((string) ($filteredData[$i]->platform));
+            $subarray[] = e((string) ($filteredData[$i]->browser));
+            $subarray[] = e((string) ($filteredData[$i]->device));
+            $subarray[] = e((string) ($filteredData[$i]->languages));
             $subarray[] = $this->getGeneralTrashedActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -544,7 +536,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     
@@ -577,9 +569,9 @@ IMAGE;
                 <<<IMAGE
     <img src="storage/{$filteredData[$i]->image}" class="rounded-circle" alt="User Image" width="100px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->name;
-            $subarray[] = $filteredData[$i]->city;
-            $subarray[] = $filteredData[$i]->truncated_testimonial;
+            $subarray[] = e((string) ($filteredData[$i]->name));
+            $subarray[] = e((string) ($filteredData[$i]->city));
+            $subarray[] = e((string) ($filteredData[$i]->truncated_testimonial));
             $subarray[] = $this->getTestimonialActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -591,7 +583,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedTestimonials($draw, $searchParameter, $orderBy, $start, $length)
@@ -607,9 +599,9 @@ IMAGE;
                 <<<IMAGE
     <img src="storage/{$filteredData[$i]->image}" class="rounded-circle" alt="User Image" width="100px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->name;
-            $subarray[] = $filteredData[$i]->city;
-            $subarray[] = $filteredData[$i]->truncated_testimonial;
+            $subarray[] = e((string) ($filteredData[$i]->name));
+            $subarray[] = e((string) ($filteredData[$i]->city));
+            $subarray[] = e((string) ($filteredData[$i]->truncated_testimonial));
             $subarray[] = $this->getTrashedTestimonialActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -621,7 +613,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     /*
@@ -681,16 +673,16 @@ IMAGE;
             $subarray[] = <<<IMAGE
             <img src="storage/{$filteredData[$i]->feature_image_path}" alt="Feature Image" width="100px"/>
 IMAGE;
-            $subarray[] = "<span class='badge badge-$cssClass'>$status</span>";
+            $subarray[] = "<span class='badge badge-" . e($cssClass) . "'>" . e($status) . "</span>";
 
             $cssClass = lcfirst($type);
 
-            $subarray[] = "<span class='badge badge-$cssClass'>$type</span>";
-            $subarray[] = $filteredData[$i]->owner_name;
-            $subarray[] = $filteredData[$i]->carpet;
-            $subarray[] = $filteredData[$i]->property_address;
-            $subarray[] = $filteredData[$i]->under_construction == 1 ? 'Under Construction' : 'Ready to move';
-            $subarray[] = $filteredData[$i]->age_of_property;
+            $subarray[] = "<span class='badge badge-" . e($cssClass) . "'>" . e($type) . "</span>";
+            $subarray[] = e((string) ($filteredData[$i]->owner_name));
+            $subarray[] = e((string) ($filteredData[$i]->carpet));
+            $subarray[] = e((string) ($filteredData[$i]->property_address));
+            $subarray[] = e((string) ($filteredData[$i]->under_construction == 1 ? 'Under Construction' : 'Ready to move'));
+            $subarray[] = e((string) ($filteredData[$i]->age_of_property));
             $subarray[] = $this->getPropertiesActionButton($filteredData[$i]);
 
             $data[] = $subarray;
@@ -703,7 +695,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedProperties($draw, $searchParameter, $orderBy, $start, $length) {
@@ -725,16 +717,16 @@ IMAGE;
             $subarray[] = <<<IMAGE
             <img src="storage/{$filteredData[$i]->feature_image_path}" alt="Feature Image" width="100px"/>
 IMAGE;
-            $subarray[] = "<span class='badge badge-$cssClass'>$status</span>";
+            $subarray[] = "<span class='badge badge-" . e($cssClass) . "'>" . e($status) . "</span>";
 
             $cssClass = lcfirst($type);
 
-            $subarray[] = "<span class='badge badge-$cssClass'>$type</span>";
-            $subarray[] = $filteredData[$i]->owner_name;
-            $subarray[] = $filteredData[$i]->carpet;
-            $subarray[] = $filteredData[$i]->property_address;
-            $subarray[] = $filteredData[$i]->under_construction == 1 ? 'Under Construction' : 'Ready to move';
-            $subarray[] = $filteredData[$i]->age_of_property;
+            $subarray[] = "<span class='badge badge-" . e($cssClass) . "'>" . e($type) . "</span>";
+            $subarray[] = e((string) ($filteredData[$i]->owner_name));
+            $subarray[] = e((string) ($filteredData[$i]->carpet));
+            $subarray[] = e((string) ($filteredData[$i]->property_address));
+            $subarray[] = e((string) ($filteredData[$i]->under_construction == 1 ? 'Under Construction' : 'Ready to move'));
+            $subarray[] = e((string) ($filteredData[$i]->age_of_property));
             $subarray[] = $this->getTrashedPropertyActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -747,7 +739,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedPropertyActionButtons($property){
@@ -785,11 +777,11 @@ IMAGE;
             $subarray[] = <<<IMAGE
             <img src="storage/{$filteredData[$i]->feature_image_path}" class="" alt="FRE Image" width="150px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->title;
-            $subarray[] = $filteredData[$i]->fre_address;
-            $subarray[] = $filteredData[$i]->developer->name;
-            $subarray[] = $filteredData[$i]->total_price;
-            $subarray[] = $filteredData[$i]->possesion_date;
+            $subarray[] = e((string) ($filteredData[$i]->title));
+            $subarray[] = e((string) ($filteredData[$i]->fre_address));
+            $subarray[] = e((string) ($filteredData[$i]->developer->name));
+            $subarray[] = e((string) ($filteredData[$i]->total_price));
+            $subarray[] = e((string) ($filteredData[$i]->possesion_date));
             $subarray[] = $this->getFREActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -801,7 +793,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
 
     }
 
@@ -831,10 +823,10 @@ IMAGE;
             $subarray[] = <<<IMAGE
             <img src="storage/{$filteredData[$i]->feature_image_path}" class="" alt="FRE Image" width="150px"/>
 IMAGE;
-            $subarray[] = $filteredData[$i]->title;
-            $subarray[] = $filteredData[$i]->fre_address;
-            $subarray[] = $filteredData[$i]->total_price;
-            $subarray[] = $filteredData[$i]->possesion_date;
+            $subarray[] = e((string) ($filteredData[$i]->title));
+            $subarray[] = e((string) ($filteredData[$i]->fre_address));
+            $subarray[] = e((string) ($filteredData[$i]->total_price));
+            $subarray[] = e((string) ($filteredData[$i]->possesion_date));
             $subarray[] = $this->getTrashedFREActionButtons($filteredData[$i]);
             $data[] = $subarray;
         }
@@ -846,7 +838,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
 
     }
 
@@ -880,13 +872,13 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->name;
-            $subarray[] = $filteredData[$i]->email;
-            $subarray[] = $filteredData[$i]->phone_number;
-            $subarray[] = $filteredData[$i]->source;
-            $subarray[] = $filteredData[$i]->property_address ? $filteredData[$i]->property_address : ($filteredData[$i]->fre_address ? $filteredData[$i]->fre_address : '');
+            $subarray[] = e((string) ($filteredData[$i]->name));
+            $subarray[] = e((string) ($filteredData[$i]->email));
+            $subarray[] = e((string) ($filteredData[$i]->phone_number));
+            $subarray[] = e((string) ($filteredData[$i]->source));
+            $subarray[] = e((string) ($filteredData[$i]->property_address ? $filteredData[$i]->property_address : ($filteredData[$i]->fre_address ? $filteredData[$i]->fre_address : '')));
 
-            $subarray[] = $filteredData[$i]->message;
+            $subarray[] = e((string) ($filteredData[$i]->message));
             $subarray[] = $this->getGeneralActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -899,7 +891,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getTrashedEnquiries($draw, $searchParameter, $orderBy, $start, $length)
@@ -911,12 +903,12 @@ IMAGE;
         for ($i = 0; $i < sizeof($filteredData); $i++) {
             $subarray = [];
             $subarray[] = $i + 1 + $start;
-            $subarray[] = $filteredData[$i]->name;
-            $subarray[] = $filteredData[$i]->email;
-            $subarray[] = $filteredData[$i]->phone_number;
-            $subarray[] = $filteredData[$i]->model;
-            $subarray[] = $filteredData[$i]->building_name;
-            $subarray[] = $filteredData[$i]->message;
+            $subarray[] = e((string) ($filteredData[$i]->name));
+            $subarray[] = e((string) ($filteredData[$i]->email));
+            $subarray[] = e((string) ($filteredData[$i]->phone_number));
+            $subarray[] = e((string) ($filteredData[$i]->model));
+            $subarray[] = e((string) ($filteredData[$i]->building_name));
+            $subarray[] = e((string) ($filteredData[$i]->message));
             $subarray[] = $this->getGeneralTrashedActionButtons($filteredData[$i]);
 
             $data[] = $subarray;
@@ -929,7 +921,7 @@ IMAGE;
             "data" => $data
         );
 
-        echo json_encode($output);
+        return response()->json($output);
     }
 
     private function getDashboard($type)
@@ -948,7 +940,7 @@ IMAGE;
             $data[] = ['label'=>'Sell', 'data'=> $sellPercentage];
             // dd($data);
 
-            echo json_encode($data);
+            return response()->json($data);
         }else if($type == "residential_commercial"){
             $data = array();
             $rentCount = Property::withoutTrashed()->residentialProperty()->get()->count();
@@ -962,7 +954,7 @@ IMAGE;
             $data[] = ['label'=>'Commercial', 'data'=> $sellPercentage];
             // dd($data);
 
-            echo json_encode($data);
+            return response()->json($data);
         }else if($type == "current_year_property"){
             $propetiesData = Property::withoutTrashed()->propertyOfCurrentYear();
             $propertyDataCount = count(Property::withoutTrashed()->propertyOfCurrentYear());
@@ -982,7 +974,7 @@ IMAGE;
                 $data[] = [$index, $count];
                 $monthCount++;
             }
-            echo json_encode($data);
+            return response()->json($data);
         }else if($type == "current_year_fre"){
             $freData = FRE::withoutTrashed()->freOfCurrentYear();
             $freDataCount = count(FRE::withoutTrashed()->freOfCurrentYear());
@@ -1002,7 +994,7 @@ IMAGE;
                 $data[] = [$index, $count];
                 $monthCount++;
             }
-            echo json_encode($data);
+            return response()->json($data);
         }
     }
 

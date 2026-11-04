@@ -256,8 +256,6 @@ class PropertiesController extends Controller
     {
         $this->authorize('update', $property);
 
-        $image = $property->getAllUploadedPropertyImagePath();
-        // dd(asset("$image[0]"));
 
         $property_status = [["id" => 1, "value" =>'Rent'],["id" => 2, "value" =>'Sell']];
         $property_types = [["id" => 1, "value" =>'Residential'],["id" => 2, "value" =>'Commercial']];

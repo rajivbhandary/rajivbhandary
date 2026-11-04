@@ -14,5 +14,5 @@
 
     <h3 class="fs-md-32 text-heading lh-141 mb-2">{{$blog->title}}</h3>
 
-    {!! $blog->body !!}
+    {!! \App\Support\Html::clean($blog->body) !!}
 </div>

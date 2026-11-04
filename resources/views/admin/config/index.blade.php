@@ -60,6 +60,24 @@
                             <span class="kt-widget1__desc">{{ $config->default_seo_og_description }}</span>
                         </div>
                     </div>
+                    <div class="kt-widget1__item">
+                        <div class="kt-widget1__info">
+                            <h3 class="kt-widget1__title"><i class="flaticon2-next"></i> Contact phone:</h3>
+                            <span class="kt-widget1__desc">{{ $config->contact_phone ?: 'Not set' }}</span>
+                        </div>
+                    </div>
+                    <div class="kt-widget1__item">
+                        <div class="kt-widget1__info">
+                            <h3 class="kt-widget1__title"><i class="flaticon2-next"></i> WhatsApp number:</h3>
+                            <span class="kt-widget1__desc">{{ $config->contact_whatsapp ?: 'Not set' }}</span>
+                        </div>
+                    </div>
+                    <div class="kt-widget1__item">
+                        <div class="kt-widget1__info">
+                            <h3 class="kt-widget1__title"><i class="flaticon2-next"></i> Contact email:</h3>
+                            <span class="kt-widget1__desc">{{ $config->contact_email ?: 'Not set' }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -50,4 +50,11 @@ class WelcomeController extends Controller
             'page_seo',
         ]));
     }
+
+    public function privacy()
+    {
+        $page_seo = Page::where('route_name', 'frontend.privacy')->first();
+
+        return view('frontend.privacy-policy', compact('page_seo'));
+    }
 }

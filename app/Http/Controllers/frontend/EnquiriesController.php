@@ -10,21 +10,24 @@ use App\Notifications\NewEnquiryNotification;
 use App\Notifications\RevertEnquiryNotification;
 use App\Property;
 use App\User;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EnquiriesController extends Controller
 {
-    public function submitEnquiry(CreateEnquiryRequest $request){
-        // dd($request);
+    public function submitEnquiry(CreateEnquiryRequest $request)
+    {
         $model = null;
-        $model_id = $request->model_id ?? null;
-        if($request->model === "property"){
+        $modelId = null;
+        if ($request->model === 'property' && Property::whereKey($request->model_id)->exists()) {
             $model = Property::class;
-        }else if($request->model === "fre"){
+            $modelId = (int) $request->model_id;
+        } elseif ($request->model === 'fre' && FRE::whereKey($request->model_id)->exists()) {
             $model = FRE::class;
+            $modelId = (int) $request->model_id;
         }
+
         $enquiry = Enquiry::create([
-            'model_id' => $model_id,
+            'model_id' => $modelId,
             'model' => $model,
             'name' => $request->name,
             'email' => $request->email,
@@ -33,13 +36,22 @@ class EnquiriesController extends Controller
             'state' => $request->state,
             'message' => $request->message,
         ]);
-        $users = User::admins()->get();
-        foreach ($users as $user){
-            $user->notify(new NewEnquiryNotification($enquiry));
+
+        // The lead is saved; a mail outage must not show the visitor an error.
+        try {
+            foreach (User::admins()->get() as $user) {
+                $user->notify(new NewEnquiryNotification($enquiry));
+            }
+            if ($enquiry->email) {
+                $enquiry->notify(new RevertEnquiryNotification($enquiry));
+            }
+        } catch (\Throwable $e) {
+            Log::error('Enquiry notification failed', ['enquiry_id' => $enquiry->id, 'error' => $e->getMessage()]);
         }
 
-        $enquiry->notify(new RevertEnquiryNotification($enquiry));
-
-        return "success";
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Thank you! Our team will call you shortly.',
+        ]);
     }
 }

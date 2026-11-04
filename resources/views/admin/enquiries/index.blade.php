@@ -26,10 +26,13 @@
                                 Export Excel
                             </a>
 
-                            <a href="{{ route('enquiries.trash.all')}}" class="btn btn-default mr-1">
+                            <form method="POST" action="{{ route('enquiries.trash.all') }}" class="d-inline" onsubmit="return confirm('Move all records to the trash?')">
+                                @csrf
+                                <button type="submit" class="btn btn-default mr-1">
                                 <i class="la la-trash"></i>
                                 Trash All
-                            </a>
+                            </button>
+                            </form>
 
                             <a href="{{ route('enquiries.trashed')}}" class="btn btn-brand btn-elevate">
                                 <i class="la la-exclamation-triangle"></i>

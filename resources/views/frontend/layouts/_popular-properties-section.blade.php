@@ -14,10 +14,10 @@
                                     <span class="badge mr-2 badge-{{lcfirst($property->type)}}">{{ $property->type }}</span>
                                 </div>
                                 <ul class="list-inline mb-0 mt-auto hover-image">
-                                    <li class="list-inline-item mr-2" data-toggle="tooltip" title="{{ count($property->getAllUploadedPropertyImageNames($property->id)) }} Images">
+                                    <li class="list-inline-item mr-2" data-toggle="tooltip" title="{{ $property->photo_count }} Images">
                                         <a href="{{ route('frontend.single-property', $property->slug) }}" class="text-white">
                                             <i class="fa fa-image"></i>
-                                            <span class="pl-1">{{ count($property->getAllUploadedPropertyImageNames($property->id)) }}</span>
+                                            <span class="pl-1">{{ $property->photo_count }}</span>
                                         </a>
                                     </li>
                                 </ul>

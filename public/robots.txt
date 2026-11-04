@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /control-panel/
+Disallow: /login
+Disallow: /password/
+Disallow: /advance-search
+
+Sitemap: https://perksproperties.in/sitemap.xml

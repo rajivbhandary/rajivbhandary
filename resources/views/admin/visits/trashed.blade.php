@@ -21,14 +21,20 @@
                 <div class="kt-portlet__head-toolbar">
                     <div class="kt-portlet__head-wrapper">
                         <div class="kt-portlet__head-actions">
-                            <a href="{{ route('visits.restore.all') }}" class="btn btn-default mr-1">
+                            <form method="POST" action="{{ route('visits.restore.all') }}" class="d-inline" onsubmit="return confirm('Restore all trashed records?')">
+                                @csrf
+                                <button type="submit" class="btn btn-default mr-1">
                                 <i class="la la-refresh"></i>
                                 Restore All
-                            </a>
-                            <a href="{{ route('visits.delete.all') }}" class="btn btn-default mr-1">
+                            </button>
+                            </form>
+                            <form method="POST" action="{{ route('visits.delete.all') }}" class="d-inline" onsubmit="return confirm('Permanently delete all trashed records? This cannot be undone.')">
+                                @csrf
+                                <button type="submit" class="btn btn-default mr-1">
                                 <i class="la la-trash"></i>
                                 Delete All
-                            </a>
+                            </button>
+                            </form>
                             <a href="{{ route('visits.index')}}" class="btn btn-brand btn-elevate btn-icon-sm">
                                 <i class="la la-cog"></i>
                                 Manage Visits

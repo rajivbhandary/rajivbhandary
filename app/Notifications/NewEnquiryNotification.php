@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Enquiry;
-use App\Property;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -44,26 +43,26 @@ class NewEnquiryNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        if($this->enquiry->isProperty() || $this->enquiry->isFre() ){
-            $model = $this->enquiry->getModelData();
-            return (new MailMessage)
-                ->subject("New Enquiry")
-                ->line(new HtmlString("A new enquiry was made by <b>{$this->enquiry->name}</b> from <b>{$this->enquiry->city},  {$this->enquiry->state}</b> for {$this->enquiry->source} - <b>{$model->location->building_name}</b>."))
-                ->line(new HtmlString("Email: <b>{$this->enquiry->email}</b>"))
-                ->line(new HtmlString("Phone Number: <b>{$this->enquiry->phone_number}</b>"))
-                ->line('Thank you for using our application!');
-        }else{
-            return (new MailMessage)
-            ->subject("New Enquiry")
-            ->line(new HtmlString("A new enquiry was made by <b>{$this->enquiry->name}</b> from <b>{$this->enquiry->city}- {$this->enquiry->state}</b> from {$this->enquiry->source}."))
-            ->line(new HtmlString("Email: <b>{$this->enquiry->email}</b>"))
-            ->line(new HtmlString("Phone Number: <b>{$this->enquiry->phone_number}</b>"))
-            ->line('Thank you for using our application!');
+        $enquiry = $this->enquiry;
+        $about = $enquiry->subject_name
+            ? $enquiry->source . ' - ' . $enquiry->subject_name
+            : ($enquiry->source ?: 'Website');
+        $from = trim(implode(', ', array_filter([$enquiry->city, $enquiry->state])));
+
+        // Every value typed by the visitor is escaped before it goes into HTML.
+        $mail = (new MailMessage)
+            ->subject('New enquiry from ' . $enquiry->name)
+            ->line(new HtmlString('<b>' . e($enquiry->name) . '</b> enquired about <b>' . e($about) . '</b>' . ($from ? ' (' . e($from) . ')' : '') . '.'))
+            ->line(new HtmlString('Mobile: <b>' . e($enquiry->phone_number) . '</b>'));
+
+        if ($enquiry->email) {
+            $mail->line(new HtmlString('Email: <b>' . e($enquiry->email) . '</b>'));
         }
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+        if ($enquiry->message) {
+            $mail->line(new HtmlString('Message: ' . nl2br(e($enquiry->message))));
+        }
+
+        return $mail->action('Open enquiries', route('enquiries.index'));
     }
 
     /**

@@ -1,0 +1,12 @@
+# Uploaded files are data, never code. Stop Apache from running any
+# script that ends up in public/storage, even if an upload check fails.
+<FilesMatch "\.(?i:php\d?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp|shtml|htaccess)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>

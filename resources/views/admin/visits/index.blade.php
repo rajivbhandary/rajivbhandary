@@ -21,10 +21,13 @@
                 <div class="kt-portlet__head-toolbar">
                     <div class="kt-portlet__head-wrapper">
                         <div class="kt-portlet__head-actions">
-                            <a href="{{ route('visits.trash.all')}}" class="btn btn-default mr-1">
+                            <form method="POST" action="{{ route('visits.trash.all') }}" class="d-inline" onsubmit="return confirm('Move all records to the trash?')">
+                                @csrf
+                                <button type="submit" class="btn btn-default mr-1">
                                 <i class="la la-trash"></i>
                                 Trash All
-                            </a>
+                            </button>
+                            </form>
 
                             <a href="{{ route('visits.trashed')}}" class="btn btn-brand btn-elevate">
                                 <i class="la la-exclamation-triangle"></i>

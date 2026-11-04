@@ -23,11 +23,5 @@
 @endsection
 
 @section('page-level-scripts')
-    <script type="text/javascript"
-            src="https://maps.google.com/maps/api/js?key=AIzaSyBtef1bQ120B4xrdo9Tli83GW6ro4TecVI&sensor=false"></script>
 
-    <script>
-      initMapCoordinates("18.91686099862324", "72.81799253695633");
-      initMarker("{{ 'contact-us-icon.png' }}");
-    </script>
 @endsection

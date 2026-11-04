@@ -23,7 +23,7 @@
                         <div class="kt-portlet__body">
                             <div class="form-group">
                                 <label>Default SEO Author</label>
-                                <input type="default_seo_author" name="default_seo_author"
+                                <input type="text" name="default_seo_author"
                                        class="form-control @error('default_seo_author') is-invalid @enderror"
                                        placeholder="Enter SEO Author" value="{{ old('default_seo_author', $config->default_seo_author) }}">
                                 @error('default_seo_author')
@@ -35,7 +35,7 @@
 
                             <div class="form-group">
                                 <label>Default SEO Description</label>
-                                <input type="default_seo_description" name="default_seo_description"
+                                <input type="text" name="default_seo_description"
                                        class="form-control @error('default_seo_description') is-invalid @enderror"
                                        placeholder="Enter SEO Description" value="{{ old('default_seo_description', $config->default_seo_description) }}">
                                 @error('default_seo_description')
@@ -47,7 +47,7 @@
 
                             <div class="form-group">
                                 <label>Default SEO Keywords</label>
-                                <input type="default_seo_keywords" name="default_seo_keywords"
+                                <input type="text" name="default_seo_keywords"
                                        class="form-control @error('default_seo_keywords') is-invalid @enderror"
                                        placeholder="Enter SEO Keywords" value="{{ old('default_seo_keywords', $config->default_seo_keywords) }}">
                                 @error('default_seo_keywords')
@@ -59,7 +59,7 @@
 
                             <div class="form-group">
                                 <label>Default SEO OG Title</label>
-                                <input type="default_seo_og_title" name="default_seo_og_title"
+                                <input type="text" name="default_seo_og_title"
                                        class="form-control @error('default_seo_og_title') is-invalid @enderror"
                                        placeholder="Enter SEO OG Title" value="{{ old('default_seo_og_title', $config->default_seo_og_title) }}">
                                 @error('default_seo_og_title')
@@ -71,7 +71,7 @@
 
                             <div class="form-group">
                                 <label>Default SEO OG Description</label>
-                                <input type="default_seo_og_description" name="default_seo_og_description"
+                                <input type="text" name="default_seo_og_description"
                                        class="form-control @error('default_seo_og_description') is-invalid @enderror"
                                        placeholder="Enter SEO OG Description" value="{{ old('default_seo_og_description', $config->default_seo_og_description) }}">
                                 @error('default_seo_og_description')
@@ -79,6 +79,44 @@
                                 @else
                                     <span class="form-text text-muted">Short description displayed when you share the config link</span>
                                     @enderror
+                            </div>
+
+                            <h4 class="kt-section__title mt-5">Contact details</h4>
+
+                            <div class="form-group">
+                                <label for="contact_phone">Contact phone</label>
+                                <input type="tel" id="contact_phone" name="contact_phone"
+                                       class="form-control @error('contact_phone') is-invalid @enderror"
+                                       placeholder="+91 98200 12345" value="{{ old('contact_phone', $config->contact_phone) }}">
+                                @error('contact_phone')
+                                <p class="text-danger">{{ $message }}</p>
+                                @else
+                                    <span class="form-text text-muted">Shown in the header, footer, contact page and the Call button.</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contact_whatsapp">WhatsApp number</label>
+                                <input type="tel" id="contact_whatsapp" name="contact_whatsapp"
+                                       class="form-control @error('contact_whatsapp') is-invalid @enderror"
+                                       placeholder="+91 98200 12345" value="{{ old('contact_whatsapp', $config->contact_whatsapp) }}">
+                                @error('contact_whatsapp')
+                                <p class="text-danger">{{ $message }}</p>
+                                @else
+                                    <span class="form-text text-muted">Used by the WhatsApp button. Leave empty to use the contact phone.</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contact_email">Contact email</label>
+                                <input type="email" id="contact_email" name="contact_email"
+                                       class="form-control @error('contact_email') is-invalid @enderror"
+                                       placeholder="connect@perksproperties.in" value="{{ old('contact_email', $config->contact_email) }}">
+                                @error('contact_email')
+                                <p class="text-danger">{{ $message }}</p>
+                                @else
+                                    <span class="form-text text-muted">Shown in the footer and contact page.</span>
+                                @enderror
                             </div>
 
                         </div>

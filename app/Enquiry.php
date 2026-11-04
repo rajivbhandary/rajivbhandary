@@ -60,6 +60,23 @@ class Enquiry extends Model
      * ACCESSORS
      */
 
+    /**
+     * Name of the listing the enquiry is about (building or FRE title),
+     * or null for general enquiries and listings that no longer exist.
+     */
+    public function getSubjectNameAttribute()
+    {
+        $model = $this->getModelData();
+        if (!$model) {
+            return null;
+        }
+        if ($this->isFre()) {
+            return $model->title;
+        }
+
+        return optional($model->location)->building_name;
+    }
+
     public function getSourceAttribute()
     {
         if($this->isProperty())

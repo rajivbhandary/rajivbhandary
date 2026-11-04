@@ -2,113 +2,46 @@
 
 namespace App\Http\Controllers\admin;
 
-use App\FRE;
 use App\Http\Controllers\Controller;
-use App\Property;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
+/**
+ * Receives photos from the Uppy uploader on the property and FRE forms.
+ * Only real images are accepted; anything else is rejected before it
+ * reaches the public disk.
+ */
 class ImageUploadController extends Controller
 {
-    public function uploadPropertyImage(Request $request, $folderName){
-        $imageURL = array();
-        if($request->has('propertyID')){
-            //update property
-            $propertyID = $request->get('propertyID');
-            $property = Property::findOrFail($propertyID);
+    public const IMAGE_RULES = ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'];
 
-            //previousImages
-            $imageProperty = $property->image;
-            // dd($imageProperty);
-            $previousimages = array();
-            foreach($imageProperty as $temp)
-            {
-                $previousimages[] = $temp->image['path'];
-            }
-
-            if($request['files'] != null){
-                $uppyImage = $request['files'];
-                if(! ($request->has('uploadName'))){
-                    //new image, store & return URL to insert in db;
-                    foreach($uppyImage as $image){
-                        $imageURL['uploadURL'] = $image->store("properties");
-                    }
-                    echo json_encode($imageURL);
-                }else{
-                    //common image ie match in previous images
-                    echo json_encode($imageURL);
-                }
-            }else{
-                abort(404);
-            }
-        }else{
-            //create property
-            if($request['files'] != null){
-                $images = $request['files'];
-                foreach($images as $image){
-                    $imageURL['uploadURL'] = $image->store("properties");
-                }
-                echo json_encode($imageURL);
-            }else{
-                abort(404);
-            }
-        }
+    public function uploadPropertyImage(Request $request, $folderName)
+    {
+        return $this->storeUploads($request, 'properties');
     }
 
-    public function uploadFREImage(Request $request, $folderName){
-        $imageURL = array();
-        if($request->has('freID')){
-            //update property
-            $freID = $request->get('freID');
-            $fre = FRE::findOrFail($freID);
-            
-            //previousImages
-            $imageFre = $fre->image;
-            // dd($imageProperty);
-            $previousimages = array();
-            foreach($imageFre as $temp)
-            {
-                $previousimages[] = $temp->image['path'];
-            }
-
-            if($request['files'] != null){
-                $uppyImage = $request['files'];
-                if(! ($request->has('uploadName'))){
-                    //new image, store & return URL to insert in db;
-                    foreach($uppyImage as $image){
-                        $imageURL['uploadURL'] = $image->store("fres");
-                    }
-                    echo json_encode($imageURL);
-                }else{
-                    //common image ie match in previous images
-                    echo json_encode($imageURL);
-                }
-            }else{
-                abort(404);
-            }
-        }else{
-            //create property
-            if($request['files'] != null){
-                $images = $request['files'];
-                foreach($images as $image){
-                    $imageURL['uploadURL'] = $image->store("fres");
-                }
-                echo json_encode($imageURL);
-            }else{
-                abort(404);
-            }
-        }
+    public function uploadFREImage(Request $request, $folderName)
+    {
+        return $this->storeUploads($request, 'fres');
     }
 
-    // public function uploadFREImage(Request $request, $folderName){
-    //     if($request['files'] != null){
-    //         $images = $request['files'];
-    //         foreach($images as $image){
-    //             $image->store('fres-temp/'.$folderName);
-    //         }
-    //         echo json_encode(array('uploadURL' => asset("storage/$image")));
-    //     }else{
-    //         abort(404);
-    //     }
-    // }
+    private function storeUploads(Request $request, $directory)
+    {
+        // Uppy re-sends images that are already attached when editing;
+        // those carry an uploadName and need no new file.
+        if ($request->has('uploadName')) {
+            return response()->json([]);
+        }
+
+        $request->validate([
+            'files' => ['required', 'array', 'min:1', 'max:20'],
+            'files.*' => self::IMAGE_RULES,
+        ]);
+
+        $imageURL = [];
+        foreach ($request->file('files') as $image) {
+            $imageURL['uploadURL'] = $image->store($directory);
+        }
+
+        return response()->json($imageURL);
+    }
 }

@@ -14,6 +14,13 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // The dashboard lists customer enquiries and visitor logs, so it is
+        // for admins only. Authors go straight to their blog posts.
+        $user = auth()->user();
+        if (!($user->isAdmin() || $user->isSuperAdmin())) {
+            return redirect()->route('blogs.index');
+        }
+
         $property_count = Property::withoutTrashed()->count();
         $fre_count = FRE::withoutTrashed()->count();
         $blog_count = Blog::withoutTrashed()->approved()->count();

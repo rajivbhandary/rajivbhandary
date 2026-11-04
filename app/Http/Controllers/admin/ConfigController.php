@@ -79,10 +79,10 @@ class ConfigController extends Controller
     public function update(UpdateConfigRequest $request, Config $config)
     {
         $this->authorize('update', $config);
-        $data = $request->only(['default_seo_author','default_seo_description', 'default_seo_keywords', 'default_seo_og_title', 'default_seo_og_description']);
+        $data = $request->only(['default_seo_author', 'default_seo_description', 'default_seo_keywords', 'default_seo_og_title', 'default_seo_og_description', 'contact_phone', 'contact_whatsapp', 'contact_email']);
         $config->update($data);
 
-        session()->flash('success', "Config was updated Successfully");
+        session()->flash('success', "Site settings were updated.");
         return redirect(route('config.index', compact([
             'config'
         ])));

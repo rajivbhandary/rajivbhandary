@@ -8,7 +8,7 @@
                     <div class="testimonial-item">
                         <div class="bg-gray-02 card p-6 border-0 fadeInUp animated mb-0" data-animate="fadeInUp">
                             <div class="card-body p-0 text-center"> <span class="text-primary fs-26 lh-1 mb-4 d-block"><i class="fa fa-quote-left"></i></span>
-                                <p class="card-text fs-15 lh-2 mb-4">{!!$testimonial->testimonial!!}</p> <span class="mx-auto divider mb-5"></span> <img src="{{ asset("storage/$testimonial->image") }}" class="testimonial-img rounded-circle d-inline-block mb-2" alt="Testimonial Image">
+                                <div class="card-text fs-15 lh-2 mb-4">{!! \App\Support\Html::clean($testimonial->testimonial) !!}</div> <span class="mx-auto divider mb-5"></span> <img src="{{ asset("storage/$testimonial->image") }}" class="testimonial-img rounded-circle d-inline-block mb-2" alt="Testimonial Image">
                                 <p class="fs-16 lh-214 text-dark font-weight-500 mb-0">{{$testimonial->name}}</p>
                                 <p class="mb-0">{{$testimonial->city}}</p>
                             </div>

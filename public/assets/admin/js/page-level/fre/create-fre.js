@@ -57,7 +57,7 @@ var KTWizard2 = function () {
             method: 'post',
             formData: true,
             fieldName: 'files[]',
-            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json'}
         })
 
         uppy.setMeta({ type: 'file'})

@@ -43,20 +43,17 @@ class RevertEnquiryNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        if($this->enquiry->isProperty() && $this->enquiry->isFre()){
-            $model = $this->enquiry->getModelData();
-            return (new MailMessage)
-            ->subject('Perks Properties - Enquiry Revert')
-            ->line(new HtmlString("We received your enquiry. Thank you so much for your interest in {$this->enquiry->model} - <strong><b>{$model->location->building_name}</strong>."))
-            ->line('However, please do not hesitate to contact us for further clarification if need be.')
-            ->line('Thank you for putting your trust in us');
-        }else{
-            return (new MailMessage)
-            ->subject('Perks Properties - Enquiry Revert')
-            ->line(new HtmlString("We received your enquiry. Thank you so much for your interest."))
-            ->line('However, please do not hesitate to contact us for further clarification if need be.')
-            ->line('Thank you for putting your trust in us');
-        }
+        $subject = $this->enquiry->subject_name;
+        $intro = $subject
+            ? new HtmlString('Thank you for your interest in <b>' . e($subject) . '</b>. We have received your enquiry.')
+            : 'Thank you for contacting Perks Properties. We have received your enquiry.';
+
+        return (new MailMessage)
+            ->subject('We received your enquiry - Perks Properties')
+            ->greeting('Hello ' . $this->enquiry->name . ',')
+            ->line($intro)
+            ->line('One of our property advisors will call you on ' . $this->enquiry->phone_number . ' shortly.')
+            ->line('If you did not make this enquiry, you can ignore this email.');
     }
 
     /**

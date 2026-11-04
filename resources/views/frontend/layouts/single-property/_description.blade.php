@@ -15,7 +15,7 @@
         </div>
     </div>
     <h4 class="fs-22 text-heading mt-6 mb-2">Description</h4>
-    <p class="mb-0 lh-214 text-justify">{!!$property->description!!}</p>
+    <div class="mb-0 lh-214 property-description">{!! \App\Support\Html::clean($property->description) !!}</div>
 
     <a href="#" data-toggle="modal" data-target="#enquiryModal" data-model="property" data-id="{{ $property->id }}" class="btn btn-primary enquiry-button mt-4">Enquire Now</a>
 </section>

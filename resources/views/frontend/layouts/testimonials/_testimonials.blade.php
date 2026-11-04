@@ -20,7 +20,7 @@
                </h2>
                
                <p class="mb-2 font-weight-500 text-gray-light">{{$testimonial->city}}</p>
-               <p class="mb-0 ml-0"> <i class="fa fa-quote-left text-primary"></i> {!!$testimonial->testimonial!!} <i class="fa fa-quote-right text-primary"></i></p>
+               <p class="mb-0 ml-0"> <i class="fa fa-quote-left text-primary"></i> {!! \App\Support\Html::clean($testimonial->testimonial) !!} <i class="fa fa-quote-right text-primary"></i></p>
                
             </div>
          </div>

@@ -67,12 +67,6 @@
 @endsection
 
 @section('page-level-scripts')
-    <script type="text/javascript"
-            src="https://maps.google.com/maps/api/js?key=AIzaSyCVXqFZF9JEMJdig_6ZFsBJjIFZ57DI2ac&sensor=false"></script>
 
-    <script>
-        initMapCoordinates("{{$fre->location->latitude}}", "{{$fre->location->longitude}}");
-        initMarker("{{ 'fre-icon.png' }}");
-    </script>
 
 @endsection
