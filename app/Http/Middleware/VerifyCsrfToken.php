@@ -2,14 +2,17 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery as Middleware;
 
+/**
+ * CSRF token and request-origin check for every form and AJAX POST.
+ */
 class VerifyCsrfToken extends Middleware
 {
     /**
-     * The URIs that should be excluded from CSRF verification.
+     * The URIs that should be excluded from forgery protection.
      *
-     * @var array
+     * @var array<int, string>
      */
     protected $except = [
         //

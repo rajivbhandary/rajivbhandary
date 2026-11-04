@@ -33,9 +33,9 @@ class Blog extends Model
         'seo_og_description',
     ];
 
-    protected $dates = [
-        'published_at',
-        'approved_at'
+    protected $casts = [
+        'published_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     /**

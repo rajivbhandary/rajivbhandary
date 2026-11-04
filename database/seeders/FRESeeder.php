@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Developer;
 use App\FRE;
 use App\FREAmenity;
@@ -12,7 +14,6 @@ use Carbon\Carbon;
 use Faker\Factory;
 use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
-use Ramsey\Uuid\Type\Integer;
 
 class FRESeeder extends Seeder
 {

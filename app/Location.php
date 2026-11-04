@@ -29,10 +29,10 @@ class Location extends Model
      * RELATIONSHIP FUNCTIONS
      */
     public function property() {
-        return $this->belongsTo(Property::class, 'id');
+        return $this->hasOne(Property::class, 'location_id');
     }
 
     public function fre() {
-        return $this->belongsTo(FRE::class, 'id');
+        return $this->hasOne(FRE::class, 'location_id');
     }
 }

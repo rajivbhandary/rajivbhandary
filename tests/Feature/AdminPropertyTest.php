@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Property;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminPropertyTest extends TestCase
@@ -13,7 +15,7 @@ class AdminPropertyTest extends TestCase
 
     private function admin()
     {
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
         $user->role = 'admin';
         $user->save();
 
@@ -42,7 +44,7 @@ class AdminPropertyTest extends TestCase
 
     public function test_a_residential_sale_listing_can_be_edited()
     {
-        $this->seed(\PropertySeeder::class);
+        $this->seed(\Database\Seeders\PropertySeeder::class);
         $property = Property::where('type', 'Residential')->where('status', 'Sell')->firstOrFail();
 
         $this->actingAs($this->admin())
@@ -58,7 +60,7 @@ class AdminPropertyTest extends TestCase
 
     public function test_invalid_edits_return_every_field_error_and_change_nothing()
     {
-        $this->seed(\PropertySeeder::class);
+        $this->seed(\Database\Seeders\PropertySeeder::class);
         $property = Property::where('type', 'Residential')->where('status', 'Sell')->firstOrFail();
         $before = $property->price;
 
@@ -70,5 +72,45 @@ class AdminPropertyTest extends TestCase
             ->assertJsonValidationErrors(['property-price', 'location-pincode', 'property-bedrooms']);
 
         $this->assertEquals($before, $property->fresh()->price);
+    }
+
+    public function test_an_office_for_rent_can_be_created_with_its_photo()
+    {
+        Storage::fake('public');
+        // Make rent_details ids differ from property ids, so a relation that
+        // joins on the wrong column shows the wrong rent.
+        \App\RentDetail::create(['security_deposit_mode' => 'Fixed', 'amount' => 1, 'duration_of_agreement' => 11, 'months_of_notice' => 1]);
+
+        $payload = $this->residentialSalePayload([
+            'property-status' => '1', 'property-type' => '2', 'property-commercials' => '1',
+            'location-building-name' => 'Kalpataru Square',
+            'property-detailed-type' => 'Office',
+            'property-office-number' => '501', 'property-seats' => '24', 'property-cabin' => '3',
+            'property-meeting-room' => '1', 'property-reception-area' => '1', 'property-pantry' => '1',
+            'property-staircase' => '1', 'property-lift' => '1',
+            'property-security-deposit-mode' => '1', 'property-amount' => '185000',
+            'property-duration-of-agreement' => '36', 'property-months-of-notice' => '3',
+            'image' => UploadedFile::fake()->image('front.jpg', 1200, 800),
+        ]);
+        unset($payload['_method'], $payload['property-price']);
+
+        $this->actingAs($this->admin())
+            ->post('/control-panel/properties', $payload)
+            ->assertOk()
+            ->assertSee('success');
+
+        $property = \App\Property::with(['office', 'rentDetail', 'location'])->latest('id')->firstOrFail();
+        $this->assertSame('Rent', $property->status);
+        $this->assertSame('Commercial', $property->type);
+        $this->assertEquals(185000, $property->rentDetail->amount);
+        $this->assertEquals(1, $property->office->lift);
+        $this->assertSame('Kalpataru Square', $property->location->building_name);
+        Storage::disk('public')->assertExists($property->feature_image_path);
+
+        // The public page shows the listing with its rent and the correct lift value.
+        $this->get('/properties/' . $property->slug)
+            ->assertOk()
+            ->assertSee('₹1.85 L / month')
+            ->assertSee('Lift');
     }
 }

@@ -23,19 +23,19 @@ class AjaxController extends Controller
     public function getData(Request $request)
     {
         $user = $request->user();
-        $page = $request->get('page');
+        $page = $request->input('page');
         if (!($user->isAdmin() || $user->isSuperAdmin()) && !in_array($page, self::AUTHOR_PAGES, true)) {
             abort(403);
         }
 
         $search_parameter = null;
         $order_by = null;
-        $start = (int) $request->get('start', 0);
-        $length = (int) $request->get('length', 10);
-        $draw = (int) $request->get('draw', 1);
+        $start = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        $draw = (int) $request->input('draw', 1);
         if ($request->has('search')) {
             $search_parameter = $request->input('search.value');
-            $order_by = $request->get('order');
+            $order_by = $request->input('order');
         }
         $tables = [
             'manage_blogs' => 'getBlogs',
@@ -57,7 +57,7 @@ class AjaxController extends Controller
         ];
 
         if ($page === 'manage_dashboard') {
-            return $this->getDashboard($request->get('type'));
+            return $this->getDashboard($request->input('type'));
         }
         if (!isset($tables[$page])) {
             abort(404);

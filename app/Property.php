@@ -45,7 +45,8 @@ class Property extends Model
      * RELATIONSHIP FUNCTIONS
      */
     public function rentDetail() {
-        return $this->hasOne(RentDetail::class, 'id');
+        // properties.rent_detail_id -> rent_details.id (was matching on the property's own id).
+        return $this->belongsTo(RentDetail::class, 'rent_detail_id');
     }
 
     public function location() {
@@ -173,7 +174,7 @@ class Property extends Model
 
     public function manageImages($request){
         if($request->has('removeImages')){
-            $removeImages = $request->get('removeImages');
+            $removeImages = $request->input('removeImages');
             foreach($removeImages as $image){
                 Image::where('path', '=', $image)->forceDelete();
                 Storage::delete($image);
@@ -181,7 +182,7 @@ class Property extends Model
         }
 
         if($request->has('uploadImages')){
-            $uploadImages = $request->get('uploadImages');
+            $uploadImages = $request->input('uploadImages');
             foreach($uploadImages as $newImage)
             {
                 if($newImage != "undefined")

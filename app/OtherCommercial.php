@@ -18,6 +18,6 @@ class OtherCommercial extends Model
     ]; //ground floor = 0
 
     public function property() {
-        return $this->hasOne(Property::class);
+        return $this->belongsTo(Property::class, 'property_id');
     }
 }

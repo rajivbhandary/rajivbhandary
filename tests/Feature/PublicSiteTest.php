@@ -17,11 +17,11 @@ class PublicSiteTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\ConfigSeeder::class);
-        $this->seed(\PageSeeder::class);
-        $this->seed(\TestimonialSeeder::class);
-        $this->seed(\FRESeeder::class);
-        $this->seed(\PropertySeeder::class);
+        $this->seed(\Database\Seeders\ConfigSeeder::class);
+        $this->seed(\Database\Seeders\PageSeeder::class);
+        $this->seed(\Database\Seeders\TestimonialSeeder::class);
+        $this->seed(\Database\Seeders\FRESeeder::class);
+        $this->seed(\Database\Seeders\PropertySeeder::class);
     }
 
     public function test_every_public_page_renders()
@@ -87,7 +87,7 @@ class PublicSiteTest extends TestCase
 
     public function test_tag_pages_hide_unapproved_and_unpublished_posts()
     {
-        $author = factory(User::class)->create();
+        $author = User::factory()->create();
         $tag = Tag::create(['name' => 'Home loans', 'slug' => 'home-loans']);
         $draft = Blog::create([
             'user_id' => $author->id, 'title' => 'Secret draft post', 'slug' => 'secret-draft-post',

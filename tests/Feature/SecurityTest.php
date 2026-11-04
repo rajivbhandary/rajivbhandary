@@ -16,7 +16,7 @@ class SecurityTest extends TestCase
 
     private function userWithRole($role)
     {
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
         $user->role = $role;
         $user->save();
 

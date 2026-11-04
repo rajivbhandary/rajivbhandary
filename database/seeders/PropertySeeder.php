@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Image;
 use App\ImageProperty;
 use App\Location;

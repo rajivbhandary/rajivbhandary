@@ -39,7 +39,7 @@
     <link rel="stylesheet" href="{{ asset('assets/frontend/css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/frontend/css/font-awesome/font-awesome.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/frontend/css/styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/frontend/css/perks.css') }}?v=20261104">
+    <link rel="stylesheet" href="{{ asset('assets/frontend/css/perks.css') }}?v=20261104b">
     @yield('page-level-styles')
 
     <script type="application/ld+json">
@@ -93,7 +93,7 @@
 
     <script src="{{ asset('assets/frontend/js/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/frontend/js/bootstrap/bootstrap-bundle.js') }}"></script>
-    <script src="{{ asset('assets/frontend/js/perks.js') }}?v=20261104"></script>
+    <script src="{{ asset('assets/frontend/js/perks.js') }}?v=20261104b"></script>
     @yield('page-level-scripts')
 </body>
 </html>

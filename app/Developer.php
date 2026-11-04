@@ -16,6 +16,6 @@ class Developer extends Model
     ];
 
     public function fre() {
-        return $this->belongsTo(FRE::class, 'id');
+        return $this->hasMany(FRE::class, 'developer_id');
     }
 }

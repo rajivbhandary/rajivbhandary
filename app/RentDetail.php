@@ -20,7 +20,7 @@ class RentDetail extends Model
      * RELATIONSHIP FUNCTIONS
      */
     public function property() {
-        return $this->belongsTo(Property::class);
+        return $this->hasOne(Property::class, 'rent_detail_id');
     }
 
 }

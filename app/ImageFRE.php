@@ -17,7 +17,7 @@ class ImageFRE extends Model
     ];
     
     public function fre(){
-        return $this->belongsTo(FRE::class, 'id');
+        return $this->belongsTo(FRE::class, 'f_r_e_id');
     }
    
     public function image(){

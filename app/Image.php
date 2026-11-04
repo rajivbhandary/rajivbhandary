@@ -14,10 +14,10 @@ class Image extends Model
     ];
 
     public function imageProperty(){
-        return $this->belongsTo(ImageProperty::class);
+        return $this->hasOne(ImageProperty::class, 'image_id');
     }
 
     public function imageFRE(){
-        return $this->belongsTo(ImageFRE::class);
+        return $this->hasOne(ImageFRE::class, 'image_id');
     }
 }

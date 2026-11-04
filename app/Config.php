@@ -33,9 +33,15 @@ class Config extends Model
      */
     public static function current()
     {
-        return Cache::rememberForever(self::CACHE_KEY, function () {
-            return static::first() ?? new static();
+        // Cache plain attributes, not a model object: Laravel 13 refuses to
+        // unserialize arbitrary objects from the cache.
+        $attributes = Cache::rememberForever(self::CACHE_KEY, function () {
+            $config = static::first();
+
+            return $config ? $config->getAttributes() : [];
         });
+
+        return $attributes ? (new static())->newFromBuilder($attributes) : new static();
     }
 
     /** Phone number formatted for display, e.g. +91 98200 12345. */

@@ -17,6 +17,6 @@ class Shop extends Model
     ];
 
     public function property() {
-        return $this->hasOne(Property::class, 'id');
+        return $this->belongsTo(Property::class, 'property_id');
     }
 }

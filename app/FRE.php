@@ -116,7 +116,7 @@ class FRE extends Model
 
     public function manageImages($request){
         if($request->has('removeImages')){
-            $removeImages = $request->get('removeImages');
+            $removeImages = $request->input('removeImages');
             foreach($removeImages as $image){
                 Image::where('path', '=', $image)->forceDelete();
                 Storage::delete($image);
@@ -124,7 +124,7 @@ class FRE extends Model
         }
 
         if($request->has('uploadImages')){
-            $uploadImages = $request->get('uploadImages');
+            $uploadImages = $request->input('uploadImages');
             foreach($uploadImages as $newImage)
             {
                 if($newImage != "undefined")
