@@ -2,82 +2,130 @@
 
 namespace App\Http\Controllers\frontend;
 
-use App\Config;
 use App\Http\Controllers\Controller;
-use App\ImageProperty;
 use App\Page;
 use App\Property;
-use Carbon\Carbon;
-use Hamcrest\Core\IsTypeOf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class PropertiesController extends Controller
 {
-    public function index()
+    private const PER_PAGE = 10;
+
+    public function index(Request $request)
     {
-        $properties = Property::withoutTrashed()->latest()->paginate(10);
-        $property_count = Property::count();
-        $config = Config::first();
-        $property_types = [["id" => 1, "value" =>'Residential'],["id" => 2, "value" =>'Commercial']];
-        $page_seo = Page::where('route_name', \Illuminate\Support\Facades\Request::route()->getName())->first();
-        return view('frontend.property-list', compact([
-            'config',
-            'page_seo',
-            'properties',
-            'property_count',
-            'property_types',
-        ]));
+        return $this->listing($request, []);
+    }
+
+    /**
+     * Search results. GET, so results can be refreshed, bookmarked and shared.
+     */
+    public function advanceSearch(Request $request)
+    {
+        return $this->listing($request, $this->searchFilters($request));
     }
 
     public function show(Property $property)
     {
-        if(Property::findOrFail($property->id)){
-            $similar_properties = Property::withoutTrashed()->latest()->where('id', '!=', $property->id)->where('type', '=', $property->type)->where('status', '=', $property->status)->limit(2)->get();
+        $property->load(['location', 'image.image', 'rentDetail', 'residential']);
 
-            $config = Config::first();
+        $similar_properties = Property::withoutTrashed()
+            ->with(['location', 'rentDetail', 'residential'])
+            ->where('id', '!=', $property->id)
+            ->where('type', $property->type)
+            ->where('status', $property->status)
+            ->latest()
+            ->limit(3)
+            ->get();
 
-            return view('frontend.single-property', compact([
-                'similar_properties',
-                'property',
-                'config'
-            ]));
-        }else{
-            abort(404);
-        }
+        return view('frontend.single-property', compact('similar_properties', 'property'));
     }
 
-    public function advanceSearch(Request $request){
-        // dd($request);
-        $request->price = str_replace(',', '', $request->price);
-        $request->price = str_replace('₹', '', $request->price);
-        $request->min_price = (int)Str::before($request->price, ' to');
-        $request->max_price = (int)Str::after($request->price, 'to ');
+    private function listing(Request $request, array $filters)
+    {
+        $query = Property::withoutTrashed()
+            ->with(['location', 'rentDetail', 'residential'])
+            ->withCount('image');
+        if ($filters) {
+            $query->advanceSearch($filters);
+        }
 
-        $request->sqrt = str_replace(' sqft', '', $request->sqrt);
+        $sort = $request->query('sort');
+        if ($sort === 'price-low' || $sort === 'price-high') {
+            $query->orderByRaw('COALESCE(properties.price, (SELECT amount FROM rent_details WHERE rent_details.id = properties.rent_detail_id)) ' . ($sort === 'price-low' ? 'ASC' : 'DESC'));
+        } else {
+            $query->latest('properties.created_at');
+        }
 
-        $request->min_sqrt = (int)Str::before($request->sqrt, ' to');
-        $request->max_sqrt = (int)Str::after($request->sqrt, 'to ');
+        $properties = $query->paginate(self::PER_PAGE)->withQueryString();
+        $property_count = $properties->total();
+        $page_seo = Page::where('route_name', 'frontend.properties')->first();
 
-        // dd(gettype($request->min_price));
-        
-        
-        $properties = Property::withoutTrashed()->advanceSearch($request)->paginate(10);
-        // $properties = Property::withoutTrashed()->advanceSearch($request)->toSql();
-        // dd($properties);
-        $property_count = Property::withoutTrashed()->advanceSearch($request)->count();
-        $config = Config::first();
-        $property_types = [["id" => 1, "value" =>'Residential'],["id" => 2, "value" =>'Commercial']];
-        $page_seo = Page::where('route_name', \Illuminate\Support\Facades\Request::route()->getName())->first();
+        return view('frontend.property-list', compact('properties', 'property_count', 'page_seo', 'filters'));
+    }
 
-        return view('frontend.property-list', compact([
-            'config',
-            'page_seo',
-            'properties',
-            'property_count',
-            'property_types',
-            'request',
-        ]));
+    /**
+     * Normalise the search form into a filters array. Accepts both the
+     * current field names and the old slider text ("₹0 to ₹2,00,000").
+     */
+    private function searchFilters(Request $request)
+    {
+        [$minPrice, $maxPrice] = $this->range($request, 'min_price', 'max_price', 'price', 200000000);
+        [$minArea, $maxArea] = $this->range($request, 'min_area', 'max_area', 'sqrt', 4000);
+
+        $type = $request->query('type');
+        $legacyType = $request->query('property-type');
+        if (!$type && $legacyType) {
+            $type = $legacyType === '1' ? 'residential' : ($legacyType === '2' ? 'commercial' : null);
+        }
+        $subtype = $request->query('subtype');
+        $legacySubtype = $request->query('property-subtype');
+        if (!$subtype && $legacySubtype) {
+            $subtype = ['1' => 'offices', '2' => 'shops', '3' => 'others', '4' => 'land'][$legacySubtype] ?? null;
+        }
+
+        return array_filter([
+            'status' => in_array($request->query('status'), ['for-buy', 'for-rent'], true) ? $request->query('status') : null,
+            'search' => trim((string) $request->query('search')) ?: null,
+            'town' => trim((string) $request->query('town', $request->query('location-town'))) ?: null,
+            'type' => in_array($type, ['residential', 'commercial'], true) ? $type : null,
+            'subtype' => in_array($subtype, ['offices', 'shops', 'others', 'land'], true) ? $subtype : null,
+            'bedrooms' => $this->positiveInt($request->query('bedrooms', $request->query('property-bedrooms'))),
+            'min_price' => $minPrice,
+            'max_price' => $maxPrice,
+            'min_area' => $minArea,
+            'max_area' => $maxArea,
+        ], function ($value) {
+            return $value !== null;
+        });
+    }
+
+    private function range(Request $request, $minKey, $maxKey, $legacyKey, $openEndedMax)
+    {
+        $min = $this->positiveInt($request->query($minKey));
+        $max = $this->positiveInt($request->query($maxKey));
+
+        $legacy = (string) $request->query($legacyKey);
+        if ($min === null && $max === null && strpos($legacy, 'to') !== false) {
+            [$from, $to] = array_map(function ($part) {
+                return preg_replace('/\D+/', '', $part);
+            }, explode('to', $legacy, 2));
+            $min = $from !== '' ? (int) $from : null;
+            $max = $to !== '' ? (int) $to : null;
+        }
+
+        // The sliders' top value means "and above"; 0 means "no minimum".
+        if ($max !== null && $max >= $openEndedMax) {
+            $max = null;
+        }
+        if ($min === 0) {
+            $min = null;
+        }
+
+        return [$min, $max];
+    }
+
+    private function positiveInt($value)
+    {
+        return is_numeric($value) && (int) $value >= 0 ? (int) $value : null;
     }
 }

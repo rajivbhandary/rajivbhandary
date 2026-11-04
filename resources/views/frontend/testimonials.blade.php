@@ -1,23 +1,25 @@
 @extends('frontend.layouts.app')
 
-@section('title', 'Testimonials | Perks Properties')
-
-@section('seo-author', $config->default_seo_author)
-
-@section('seo-description'){{ $page_seo->seo_description ?? $config->default_seo_description }}@endsection
-
-@section('seo-keywords'){{ $config->default_seo_keywords . ($page_seo->seo_keywords ? ", $page_seo->seo_keywords" : '') }}@endsection
-
-@section('seo-og-title'){{ $page_seo->seo_og_title ?? $config->default_seo_og_title }}@endsection
-
-@section('seo-og-description'){{ $page_seo->seo_og_description ?? $config->default_seo_og_description }}@endsection
+@section('title', 'Client stories | Perks Properties')
+@section('seo-description'){{ optional($page_seo)->seo_description ?: 'What buyers, sellers, tenants and landlords say about working with Perks Properties in Mumbai and Thane.' }}
+@endsection
 
 @section('main-content')
+    @include('frontend.layouts.shared._page-hero', [
+        'title' => 'Client stories',
+        'subtitle' => 'In their own words: people we have helped buy, sell, rent and invest.',
+    ])
 
-    <!-- Bread-crumbs -->
-    @include('frontend.layouts.testimonials._bread-crumb')  
+    <section class="pp-section">
+        <div class="container">
+            <div class="pp-cols-3">
+                @foreach ($testimonials as $testimonial)
+                    @include('frontend.layouts.shared._testimonial', ['testimonial' => $testimonial])
+                @endforeach
+            </div>
+            {{ $testimonials->links() }}
+        </div>
+    </section>
 
-    <!-- Company Introduction -->
-    @include('frontend.layouts.testimonials._testimonials')
-
+    @include('frontend.layouts.shared._cta-band')
 @endsection

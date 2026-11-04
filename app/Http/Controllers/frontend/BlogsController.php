@@ -30,13 +30,10 @@ class BlogsController extends Controller
     {
         if($blog->isApproved() && $blog->isPublished()) {
             $tags = Tag::all();
-            $latest_blogs = Blog::withoutTrashed()->latest('published_at')->approved()->published()->where('id', '!=',$blog->id)->limit(3)->get();
-            $blogs = Blog::withoutTrashed()->approved()->published()->latest('published_at')->get();
-            $blogIds = Blog::withoutTrashed()->approved()->published()->latest('published_at')->get()->pluck('id')->toArray();
+            $latest_blogs = Blog::withoutTrashed()->latest('published_at')->approved()->published()->where('id', '!=', $blog->id)->limit(3)->get();
             $config = Config::first();
             return view('frontend.single-blog', compact([
                 'tags',
-                'blogs',
                 'blog',
                 'latest_blogs',
                 'config',
@@ -47,8 +44,9 @@ class BlogsController extends Controller
     }
 
     public function tag(Tag $tag){
-        $blogs = $tag->blogs()->latest('published_at')->searchTitle(request('search'))->paginate(6);
-        $blog_count = $tag->blogs()->latest('published_at')->searchTitle(request('search'))->count();
+        // Only approved, published posts appear publicly.
+        $blogs = $tag->blogs()->approved()->published()->latest('published_at')->searchTitle(request('search'))->paginate(6);
+        $blog_count = $tag->blogs()->approved()->published()->searchTitle(request('search'))->count();
         $config = Config::first();
         $page_seo = Page::where('route_name', "frontend.blogs")->first();
         return view('frontend.blogs-list', compact([
@@ -56,6 +54,7 @@ class BlogsController extends Controller
             'blog_count',
             'config',
             'page_seo',
+            'tag',
         ]));
     }
 }

@@ -120,7 +120,45 @@ class Property extends Model
      */
     public function getPhotoCountAttribute()
     {
+        if (isset($this->attributes['image_count'])) {
+            return (int) $this->attributes['image_count'];
+        }
+
         return $this->relationLoaded('image') ? $this->image->count() : $this->image()->count();
+    }
+
+    /**
+     * Sale price, or monthly rent for rentals.
+     */
+    public function getPriceAmountAttribute()
+    {
+        return $this->isRent() ? optional($this->rentDetail)->amount : $this->price;
+    }
+
+    /** "₹2.5 Cr" or "₹25,000 / month"; "Price on request" when missing. */
+    public function getPriceLabelAttribute()
+    {
+        $price = \App\Support\Format::inr($this->price_amount);
+        if (!$price) {
+            return 'Price on request';
+        }
+
+        return $this->isRent() ? $price . ' / month' : $price;
+    }
+
+    public function getBedroomsAttribute()
+    {
+        return $this->isResidential() ? optional($this->residential)->number_of_bedrooms : null;
+    }
+
+    /** Human headline, e.g. "2 BHK flat for sale in Mulund". */
+    public function getHeadlineAttribute()
+    {
+        $what = $this->bedrooms ? $this->bedrooms . ' BHK ' : '';
+        $what .= strtolower($this->detailed_type ?: ($this->isResidential() ? 'home' : 'commercial space'));
+        $town = optional($this->location)->town;
+
+        return ucfirst($what) . ($this->isRent() ? ' for rent' : ' for sale') . ($town ? ' in ' . $town : '');
     }
 
     public function getUploadedImages(){
@@ -319,7 +357,8 @@ class Property extends Model
     public function scopeSearch($query, $searchValue)
     {
         if ($searchValue) {
-            return $query->where('status', 'like', "%{$searchValue}%")
+            return $query->where(function ($q) use ($searchValue) {
+            $q->where('status', 'like', "%{$searchValue}%")
                     ->orWhere('type', 'like', "%{$searchValue}%")
                     ->orWhere('age_of_property', 'like', "%{$searchValue}%")
                     ->orWhere('carpet', 'like', "%{$searchValue}%")
@@ -334,6 +373,7 @@ class Property extends Model
                     ->orWhere('property_locations.country', 'like', "%{$searchValue}%")
                     ->orWhere('owner_name', 'like', "%{$searchValue}%")
                     ->orWhere('under_construction', 'like', "%{$searchValue}%");
+        });
         }
         return $query;
     }
@@ -355,94 +395,80 @@ class Property extends Model
         return $query;
     }
 
-    public function scopeAdvanceSearch($query, $searchValue){
-        // town search
-        // normal search
-        if(isset($searchValue['status'])){
-            if($searchValue['status'] == 'for-buy'){
-                $query->where('properties.status', '=', 'Sell');
-                if(isset($searchValue->min_price)){
-                    if($searchValue->max_price == 200000000){
-                        $query->where('properties.price', '>=', $searchValue->min_price);
-                    }else{
-                        $query->whereBetween('properties.price', [$searchValue->min_price, $searchValue->max_price]);
-                    }
-                }
-            }else if($searchValue['status'] == 'for-rent'){
-                $query->join('rent_details', function($join){
-                    $join->on('properties.rent_detail_id', '=', 'rent_details.id')
-                        ->where('properties.status', '=', 'Rent');
+    /**
+     * Public property search. $filters comes from
+     * PropertiesController::searchFilters(); every value is optional.
+     */
+    public function scopeAdvanceSearch($query, array $filters)
+    {
+        $query->select('properties.*')
+            ->leftJoin('locations AS property_locations', 'properties.location_id', '=', 'property_locations.id');
+
+        $status = $filters['status'] ?? null;
+        if ($status === 'for-buy') {
+            $query->where('properties.status', 'Sell');
+            $this->applyRange($query, 'properties.price', $filters['min_price'] ?? null, $filters['max_price'] ?? null);
+        } elseif ($status === 'for-rent') {
+            $query->where('properties.status', 'Rent');
+            if (isset($filters['min_price']) || isset($filters['max_price'])) {
+                $query->whereHas('rentDetail', function ($q) use ($filters) {
+                    $this->applyRange($q, 'amount', $filters['min_price'] ?? null, $filters['max_price'] ?? null);
                 });
-                if(isset($searchValue->min_price)){
-                    if($searchValue->max_price == 200000000){
-                        $query->where('rent_details.amount', '>=', $searchValue->min_price);
-                    }else{
-                        $query->whereBetween('rent_details.amount', [$searchValue->min_price, $searchValue->max_price]);
-                    }
-                }
             }
         }
-        $query->leftJoin('locations AS property_locations', 'properties.location_id', '=', 'property_locations.id');
-        if(isset($searchValue->search)){
-            $query->where('property_locations.building_name', 'like', "%{$searchValue->search}%")
-            ->orWhere('property_locations.street', 'like', "%{$searchValue->search}%")
-            ->orWhere('property_locations.landmark', 'like', "%{$searchValue->search}%")
-            ->orWhere('property_locations.locality', 'like', "%{$searchValue->search}%")
-            ->orWhere('property_locations.town', 'like', "%{$searchValue->search}%")
-            ->orWhere('property_locations.city', 'like', "%{$searchValue->search}%")
-            ->orWhere('property_locations.pincode', 'like', "%{$searchValue->search}%");
-        }
-        
-        if($searchValue['location-town'] != null){
-            $query->where('property_locations.town', 'like', "%{$searchValue['location-town']}%");
-        }
-        
 
-        if(isset($searchValue->min_sqrt)){
-            if($searchValue->max_sqrt == 4000){
-                $query->where('properties.carpet', '>=', $searchValue->min_sqrt);
-            }else{
-                $query->whereBetween('properties.carpet', [$searchValue->min_sqrt, $searchValue->max_sqrt]);
-            }
+        if (filled($filters['search'] ?? null)) {
+            $term = '%' . $filters['search'] . '%';
+            // Grouped so a keyword can't bypass the other filters.
+            $query->where(function ($q) use ($term) {
+                $q->where('property_locations.building_name', 'like', $term)
+                    ->orWhere('property_locations.street', 'like', $term)
+                    ->orWhere('property_locations.landmark', 'like', $term)
+                    ->orWhere('property_locations.locality', 'like', $term)
+                    ->orWhere('property_locations.town', 'like', $term)
+                    ->orWhere('property_locations.city', 'like', $term)
+                    ->orWhere('property_locations.pincode', 'like', $term);
+            });
         }
-        
 
-        if(isset($searchValue['property-type'])){
-            if($searchValue['property-type'] == '1'){
-                $query->where('properties.type', '=', "Residential");
-                $query->join('residentials', function($join){
-                    $join->on('properties.id', '=', 'residentials.property_id');
+        if (filled($filters['town'] ?? null)) {
+            $query->where('property_locations.town', 'like', '%' . $filters['town'] . '%');
+        }
+
+        $this->applyRange($query, 'properties.carpet', $filters['min_area'] ?? null, $filters['max_area'] ?? null);
+
+        $type = $filters['type'] ?? null;
+        if ($type === 'residential') {
+            $query->where('properties.type', 'Residential');
+            if (filled($filters['bedrooms'] ?? null)) {
+                $query->whereHas('residential', function ($q) use ($filters) {
+                    $q->where('number_of_bedrooms', (int) $filters['bedrooms']);
                 });
-                if($searchValue['property-bedrooms'] != null){
-                    $query->where('residentials.number_of_bedrooms', '=', $searchValue['property-bedrooms']);
-                }
-            }else if($searchValue['property-type'] == '2'){  
-                $query->where('properties.type', '=', "Commercial");
-                if(isset($searchValue['property-subtype'])){
-                    if($searchValue['property-subtype'] == 1){
-                        $query->join('offices', function($join){
-                            $join->on('properties.id', '=', 'offices.property_id');
-                        });
-                    }
-
-                    else if($searchValue['property-subtype'] == 2){
-                        $query->join('shops', function($join){
-                            $join->on('properties.id', '=', 'shops.property_id');
-                        });
-                    }
-
-                    else if($searchValue['property-subtype'] == 3){
-                        $query->join('other_commercials', function($join){
-                            $join->on('properties.id', '=', 'other_commercials.property_id');
-                        });
-                    }
-                }
+            }
+        } elseif ($type === 'commercial') {
+            $query->where('properties.type', 'Commercial');
+            $relation = [
+                'offices' => 'office',
+                'shops' => 'shop',
+                'others' => 'otherCommercial',
+                'land' => 'land',
+            ][$filters['subtype'] ?? ''] ?? null;
+            if ($relation) {
+                $query->whereHas($relation);
             }
         }
-        
-        $query->select('properties.*');
-        
+
         return $query;
+    }
+
+    private function applyRange($query, $column, $min, $max)
+    {
+        if ($min !== null) {
+            $query->where($column, '>=', $min);
+        }
+        if ($max !== null) {
+            $query->where($column, '<=', $max);
+        }
     }
     
     public function scopeRentProperty($query)

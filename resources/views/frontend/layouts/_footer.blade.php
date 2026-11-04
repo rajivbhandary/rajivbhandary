@@ -1,73 +1,55 @@
-<footer class="bg-dark pt-8 pb-6 footer text-muted">
-	<div class="container">
-		<div class="row">
-			<div class="col-md-8 col-lg-6 mb-6 -md-0">
-				
-				<a class="navbar-brand h1 text-white" href="{{ route('frontend.index')}}"> 
-					<img src="{{asset('assets/admin/media/logos/logo-full.png')}}" alt="Perk Properties" width="35%" height="auto" class="d-lg-inline-block d-inline-block">
-				</a>
-				<div class="mb-4 pr-lg-5 text-justify">
-					<p>Transforming real estate with global reach and local expertise .We help our clients buy, build, maintain, invest and sell every kind of property in the market.Established in 1999, Perks has extensive experience in Facility Management which helps us find the right opportunity for our client through our vast network.Our diversified network in the business gives us a unique advantage over our competitors. Through the years we are proud to say that we have set standards that our competitors try to match. Be it residential or commercial, resale or new projects, we have the best deals available in the market.</p>
-				</div>
-				
-			</div>
-			<div class="col-md-2 col-lg-2 mb-6 md-0">
-				<h4 class="text-white fs-16 my-4 font-weight-500">Quick links</h4>
-				<ul class="list-group list-group-flush list-group-no-border">					
-					<li class="list-group-item bg-transparent p-0">
-						<a href="{{ route('frontend.properties') }}" class="text-muted lh-26 font-weight-500 hover-white">Properties</a>
-					</li>
-					<li class="list-group-item bg-transparent p-0">
-						<a href="{{ route('frontend.fre') }}" class="text-muted lh-26 font-weight-500 hover-white">FREs</a>
-					</li>
-					<li class="list-group-item bg-transparent p-0">
-						<a href="{{ route('frontend.testimonials') }}" class="text-muted lh-26 font-weight-500 hover-white">Testimonials</a>
-					</li>
-					<li class="list-group-item bg-transparent p-0">
-						<a href="{{ route('frontend.about-us') }}" class="text-muted lh-26 font-weight-500 hover-white">About Us</a>
-					</li>
-					<li class="list-group-item bg-transparent p-0">
-						<a href="{{ route('frontend.blogs') }}" class="text-muted lh-26 font-weight-500 hover-white">Blogs</a>
-					</li>
-					<li class="list-group-item bg-transparent p-0">
-						<a href="{{ route('frontend.contact-us') }}" class="text-muted lh-26 font-weight-500 hover-white">Contact Us</a>
-					</li>
-				</ul>
-			</div>
-			<div class="col-md-4 col-lg-4 mb-6 md-0">
-			<h4 class="text-white fs-16 my-4 font-weight-500">Contact Us</h4>
-				<div class="d-flex">
-					<div class="mr-3">
-						<i class="fa fa-home"></i>
-					</div>
-					<p class="mb-2"><b>Colaba</b> : Office No, 32, Maker Arcade, Cuffe Parade, Mumbai, Maharashtra 400005</p>
-				</div>
+<footer class="pp-footer">
+    <div class="container">
+        <div class="pp-footer__grid">
+            <div class="pp-footer__about">
+                <a class="pp-footer__logo" href="{{ route('frontend.index') }}" aria-label="Perks Properties home">
+                    <img src="{{ asset('assets/frontend/img/brand/perks-logo-light.png') }}" alt="Perks Properties" width="152" height="46" loading="lazy">
+                </a>
+                <p class="mt-3 mb-0">
+                    Buying, selling, renting and investing in residential and commercial property
+                    across Mumbai and Thane since 1999.
+                </p>
+            </div>
 
-				<div class="d-flex">
-					<div class="mr-3">
-						<i class="fa fa-home"></i>
-					</div>
-					<p class="mb-2"><b>Thane</b> : Plot no.B 39, 3rd Floor, Bhoomi Velocity, Rd Number 16, Wagle Industrial Estate, Thane West, Thane, Maharashtra 400604</p>
-				</div>
+            <div>
+                <h2>Explore</h2>
+                <ul>
+                    <li><a href="{{ route('frontend.properties') }}">Properties</a></li>
+                    <li><a href="{{ route('frontend.fre') }}">Fractional ownership</a></li>
+                    <li><a href="{{ route('frontend.blogs') }}">Blog</a></li>
+                    <li><a href="{{ route('frontend.testimonials') }}">Client stories</a></li>
+                    <li><a href="{{ route('frontend.about-us') }}">About us</a></li>
+                    <li><a href="{{ route('frontend.contact-us') }}">Contact</a></li>
+                </ul>
+            </div>
 
-				<div class="d-flex">
-					<div class="mr-3">
-						<i class="fa fa-phone"></i>
-					</div>
-					<p class="mb-2">(+68)122109876</p>
-					
-				</div>
+            <div>
+                <h2>Visit or call</h2>
+                <address>
+                    <strong>Colaba</strong>
+                    Office No. 32, Maker Arcade, Cuffe Parade, Mumbai 400005
+                </address>
+                <address>
+                    <strong>Thane</strong>
+                    Plot B-39, 3rd Floor, Bhoomi Velocity, Road No. 16, Wagle Industrial Estate, Thane West 400604
+                </address>
+                <ul>
+                    @if ($config->phone_href)
+                        <li><i class="fa fa-phone mr-2" aria-hidden="true"></i><a href="tel:{{ $config->phone_href }}">{{ $config->phone_display }}</a></li>
+                    @endif
+                    @if ($config->whatsappUrl())
+                        <li><i class="fa fa-whatsapp mr-2" aria-hidden="true"></i><a href="{{ $config->whatsappUrl('Hi Perks Properties, I have a property enquiry.') }}" target="_blank" rel="noopener">WhatsApp us</a></li>
+                    @endif
+                    @if ($config->contact_email)
+                        <li><i class="fa fa-envelope mr-2" aria-hidden="true"></i><a href="mailto:{{ $config->contact_email }}">{{ $config->contact_email }}</a></li>
+                    @endif
+                </ul>
+            </div>
+        </div>
 
-				<div class="d-flex">
-					<div class="mr-3">
-						<i class="fa fa-envelope"></i>
-					</div>
-					<p class="mb-2">contact@perksproperty.com</p>
-				</div>
-			</div>
-		</div>
-		<div class="d-flex justify-content-center">
-			<p class="col-md-auto mb-0 text-muted">© 2021 Perks Links and Services. All Rights Reserved</p>
-		</div>
-	</div>
+        <div class="pp-footer__bottom">
+            <span>&copy; {{ date('Y') }} Perks Properties. All rights reserved.</span>
+            <a href="{{ route('frontend.privacy') }}">Privacy policy</a>
+        </div>
+    </div>
 </footer>

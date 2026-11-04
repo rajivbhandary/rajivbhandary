@@ -1,55 +1,33 @@
-<section class="pt-8 pb-8">
-   <div class="container">
-      <p class="text-primary letter-spacing-263 text-uppercase lh-186 text-center mb-0">Services Provided</p>
-      <h2 class="text-center lh-1625 text-dark pb-1">
-        What Can We Help You Find?
-      </h2>
-      <div class="row info-box-4 mt-7">
-        <div class="col-lg-4 mb-6 mb-lg-0">
-            <div class="card border-0 bg-transparent shadow-xs-2 shadow-hover-lg-1 pl-8 pr-6 py-5" data-animate="fadeInUp">
-                <div class="card-img-top d-flex align-items-end justify-content-center">
-                    <img src="{{asset('assets/frontend/img/services/buy.svg')}}" alt="Buy a new home">
+<section class="pp-section pp-section--tint" aria-labelledby="services-title">
+    <div class="container">
+        <div class="pp-section__head">
+            <div>
+                <span class="pp-eyebrow">How we help</span>
+                <h2 class="pp-section__title" id="services-title">Buying, selling, renting or investing</h2>
+            </div>
+        </div>
+        <div class="pp-cols-3">
+            <div class="pp-feature">
+                <span class="pp-feature__icon"><i class="fa fa-home" aria-hidden="true"></i></span>
+                <div>
+                    <h3>Buy a home or office</h3>
+                    <p>We shortlist resale and new-project options that match your budget and area, arrange site visits and help you through to registration.</p>
                 </div>
-                <div class="card-body px-0 pt-6 pb-0">
-                    <a href="single-property-1.html" class="text-decoration-none d-flex align-items-center justify-content-center">
-                    <h4 class="fs-20 lh-1625 text-dark mb-1">Buy a new home</h4>
-                    </a>
-                    <p class="card-text text-center">
-                    Lorem ipsum dolor sit amet, consec tetur cing elit. Suspe ndisse suscipit
-                    </p>
+            </div>
+            <div class="pp-feature">
+                <span class="pp-feature__icon"><i class="fa fa-tag" aria-hidden="true"></i></span>
+                <div>
+                    <h3>Sell or lease your property</h3>
+                    <p>We price it against what is actually transacting nearby, list it, screen buyers and tenants, and handle the paperwork.</p>
+                </div>
+            </div>
+            <div class="pp-feature">
+                <span class="pp-feature__icon"><i class="fa fa-key" aria-hidden="true"></i></span>
+                <div>
+                    <h3>Rent a flat, shop or office</h3>
+                    <p>Furnished or unfurnished, short or long lease: we match you with suitable listings and negotiate the deposit and terms.</p>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 mb-6 mb-lg-0">
-            <div class="card border-0 bg-transparent shadow-xs-2 shadow-hover-lg-1 pl-8 pr-6 py-5" data-animate="fadeInUp">
-                <div class="card-img-top d-flex align-items-end justify-content-center">
-                    <img src="{{asset('assets/frontend/img/services/sell.svg')}}" alt="Sell a home">
-                </div>
-                <div class="card-body px-0 pt-6 pb-0">
-                    <a href="single-property-1.html" class="text-decoration-none d-flex align-items-center justify-content-center">
-                    <h4 class="fs-20 lh-1625 text-dark mb-1">Sell a home</h4>
-                    </a>
-                    <p class="card-text text-center">
-                    Lorem ipsum dolor sit amet, consec tetur cing elit. Suspe ndisse suscipit
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 mb-6 mb-lg-0">
-            <div class="card border-0 bg-transparent shadow-xs-2 shadow-hover-lg-1 pl-8 pr-6 py-5" data-animate="fadeInUp">
-                <div class="card-img-top d-flex align-items-end justify-content-center">
-                    <img src="{{asset('assets/frontend/img/services/rent.svg')}}" alt="Rent a home">
-                </div>
-                <div class="card-body px-0 pt-6 pb-0">
-                    <a href="single-property-1.html" class="text-decoration-none d-flex align-items-center justify-content-center">
-                    <h4 class="fs-20 lh-1625 text-dark mb-1">Rent a home</h4>
-                    </a>
-                    <p class="card-text text-center">
-                    Lorem ipsum dolor sit amet, consec tetur cing elit. Suspe ndisse suscipit
-                    </p>
-                </div>
-            </div>
-        </div>
-        </div>
-   </div>
+    </div>
 </section>
