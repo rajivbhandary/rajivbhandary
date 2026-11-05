@@ -36,14 +36,15 @@ Most cPanel hosts let you switch PHP version per domain ("Select PHP Version" / 
 
 ### One-time security actions
 
-- **Change the super-admin password** if it was ever `abcd1234` (it was hardcoded in an old
-  migration).
+- **Change the passwords of every control-panel account.** An old migration and the demo
+  seed data used a hardcoded password, and earlier versions of this code were public.
 - Delete any accounts created through the old public `/register` page that should not have
   control-panel access (*Users* in the control panel; they have the `author` role).
 - Check `storage/app/public` for any file that is not an image (for example `.php`, `.phtml`,
   `.html`, `.svg`) and delete it: uploads were not restricted before this release.
-- In Google Cloud Console, delete or restrict the three old Google Maps API keys that were
-  published in the page source; the site no longer needs any key.
+- In Google Cloud Console, delete the Google API keys that earlier versions of this code
+  contained (Maps keys and a Calendar key in an unused admin demo file). The site no longer
+  needs any key; never commit keys to the repository.
 
 ## Local development
 
